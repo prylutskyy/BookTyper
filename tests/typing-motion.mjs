@@ -44,10 +44,30 @@ try {
     return { x, samples, end: caret.getBoundingClientRect().left };
   });
   assert.ok(motion.samples.some(x => x > motion.x && x < motion.end), JSON.stringify(motion));
+  const firstStep = motion.samples.find(x => x > motion.x + .01) - motion.x;
+  assert.ok(firstStep / (motion.end - motion.x) < .4, `Caret must accelerate gently, rather than jump on its first frame: ${JSON.stringify(motion)}`);
+  assert.ok(motion.samples.every((x, i) => x >= (motion.samples[i - 1] ?? motion.x) - .01 && x <= motion.end + .01), 'Forward movement must stay monotonic without overshoot');
   await page.evaluate(() => { window.savedCharacter = document.querySelector('#text-window > span'); window.savedCaret = document.querySelector('#typing-caret'); });
   await page.locator('#typing-input').press('Backspace'); await waitPosition(8);
   assert.ok(await page.evaluate(() => window.savedCharacter === document.querySelector('#text-window > span') && window.savedCaret === document.querySelector('#typing-caret')));
   console.log('PASS caret interpolates movement and Backspace preserves existing text nodes');
+
+  const rapidText = (await text()).slice(8, 18);
+  const rapid = await page.evaluate(async value => {
+    const input = document.querySelector('#typing-input'), samples = [];
+    for (const char of value) {
+      input.dispatchEvent(new InputEvent('beforeinput', { inputType: 'insertText', data: char, bubbles: true, cancelable: true }));
+      await new Promise(requestAnimationFrame);
+      samples.push({ actual: document.querySelector('#typing-caret').getBoundingClientRect().left, expected: document.querySelector('#text-window .caret').getBoundingClientRect().left - 1 });
+      await new Promise(resolve => setTimeout(resolve, 18));
+    }
+    return samples;
+  }, rapidText);
+  await waitPosition(8 + rapidText.length); await aligned();
+  assert.ok(rapid.every(sample => sample.actual <= sample.expected + .5 && sample.expected - sample.actual < 45), JSON.stringify(rapid));
+  for (const char of rapidText) await page.locator('#typing-input').press('Backspace');
+  await waitPosition(8); await aligned();
+  console.log('PASS gentle acceleration, monotonic motion and rapid retargeting without dropped text or excessive lag');
 
   const first = await text();
   await page.keyboard.insertText(first.slice(8)); await waitPosition(first.length);

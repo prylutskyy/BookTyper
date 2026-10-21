@@ -40,6 +40,7 @@ function toast(message, error = false) {
 function applySettings() {
   document.documentElement.dataset.theme = settings.theme;
   document.documentElement.style.setProperty('--typing-size', `${settings.fontSize}px`);
+  document.documentElement.style.setProperty('--content-width', `${Math.max(600, Math.min(1800, Number(settings.contentWidth) || 1200))}px`);
   document.body.classList.toggle('keyboard-hidden', settings.keyboard === false);
   const keyboardToggle = document.querySelector('#toggle-keyboard');
   keyboardToggle?.setAttribute('aria-pressed', String(settings.keyboard !== false));
@@ -76,7 +77,10 @@ function shell() {
   document.querySelector('#cancel-import').onclick = cancelImport;
   const dialog = document.querySelector('#dialog');
   dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
-  dialog.addEventListener('close', () => { if (current) document.querySelector('#typing-input')?.focus(); });
+  dialog.addEventListener('close', () => {
+    document.querySelector('#dialog-content').replaceChildren();
+    if (current) document.querySelector('#typing-input')?.focus();
+  });
   let dragDepth = 0;
   document.addEventListener('dragenter', event => { if (event.dataTransfer?.types.includes('Files')) { event.preventDefault(); dragDepth++; document.querySelector('#drop-overlay').hidden = false; } });
   document.addEventListener('dragover', event => { if (event.dataTransfer?.types.includes('Files')) event.preventDefault(); });
@@ -431,6 +435,18 @@ function preferencesMarkup() {
   return `<label class="preference"><span><strong>Тема</strong><small>Світлий або темний простір для практики.</small></span><select id="color-theme" aria-label="Тема"><option value="light" ${settings.theme === 'light' ? 'selected' : ''}>Світла</option><option value="dark" ${settings.theme === 'dark' ? 'selected' : ''}>Темна</option></select></label><label class="preference"><span><strong>Розмір тексту</strong><small>Знайдіть комфортний для очей масштаб.</small></span><select id="font-size" aria-label="Розмір тексту">${[20, 23, 25, 28, 32].map(n => `<option ${settings.fontSize === n ? 'selected' : ''} value="${n}">${n} px</option>`).join('')}</select></label><label class="preference"><span><strong>Зупинятися на помилках</strong><small>Введіть правильний символ, щоб рухатися далі.</small></span><input type="checkbox" id="strict" ${settings.strict ? 'checked' : ''} /></label><label class="preference"><span><strong>Зручна пунктуація</strong><small>Звичайні лапки, апостроф і дефіс замість типографських.</small></span><input type="checkbox" id="relaxed" ${settings.relaxed ? 'checked' : ''} /></label>`;
 }
 function bindPreferences() {
+  const width = Math.max(600, Math.min(1800, Number(settings.contentWidth) || 1200));
+  document.querySelector('#font-size').closest('label').insertAdjacentHTML('afterend', `<div class="preference width-preference"><label for="content-width"><strong>Максимальна ширина тексту</strong><small>Від 600 до 1800 px. На вузькому екрані текст підлаштовується до вікна.</small></label><div class="width-control"><div><output id="content-width-value" for="content-width">${width} px</output><button id="reset-content-width" class="text-button" type="button">Скинути</button></div><input id="content-width" type="range" min="600" max="1800" step="50" value="${width}" aria-label="Максимальна ширина тексту" aria-valuetext="${width} пікселів" /></div></div>`);
+  const widthInput = document.querySelector('#content-width');
+  const previewWidth = () => {
+    settings.contentWidth = Number(widthInput.value);
+    document.querySelector('#content-width-value').value = `${settings.contentWidth} px`;
+    widthInput.setAttribute('aria-valuetext', `${settings.contentWidth} пікселів`);
+    applySettings();
+  };
+  widthInput.oninput = previewWidth;
+  widthInput.onchange = () => { previewWidth(); persistSettings().catch(storageError); };
+  document.querySelector('#reset-content-width').onclick = () => { widthInput.value = '1200'; previewWidth(); persistSettings().catch(storageError); };
   const punctuation = document.querySelector('#relaxed').closest('label');
   punctuation.insertAdjacentHTML('afterend', `<label class="preference"><span><strong>Екранна клавіатура</strong><small>Підсвічування наступної клавіші на великому екрані.</small></span><input type="checkbox" id="keyboard-guide" ${settings.keyboard !== false ? 'checked' : ''} /></label><label class="preference"><span><strong>Розкладка підказки</strong><small>Автоматично за мовою наступної літери або обрана вручну.</small></span><select id="keyboard-layout" aria-label="Розкладка підказки"><option value="auto">Автоматично</option><option value="uk">Українська</option><option value="en">English</option></select></label>`);
   document.querySelector('#keyboard-layout').value = settings.keyboardLayout || 'auto';

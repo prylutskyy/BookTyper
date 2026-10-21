@@ -11,6 +11,7 @@ export class TypingView {
     this.nodes = new Map();
     this.position = 0;
     this.visual = null;
+    this.velocity = { x: 0, y: 0, scroll: 0 };
     this.motion = matchMedia('(prefers-reduced-motion: reduce)');
     this.onMotion = () => this.update(this.position, true);
     this.motion.addEventListener('change', this.onMotion);
@@ -86,11 +87,14 @@ export class TypingView {
     const anchor = Math.min(line * 2 + 8, this.area.clientHeight * .3);
     const target = { x: left - 1, y: top, scroll: Math.max(0, top - anchor) };
     // A line wrap must not sweep the caret diagonally across the paragraph.
-    if (this.visual && this.target && Math.abs(top - this.target.y) > line / 2) this.visual.x = target.x;
+    if (this.visual && this.target && Math.abs(top - this.target.y) > line / 2) {
+      this.visual.x = target.x; this.velocity.x = 0;
+    }
     this.target = target;
     this.caret.style.height = `${size * 1.2}px`;
-    if (snap || !this.visual || this.motion.matches) {
+    if (snap || !this.visual || this.motion.matches || Math.abs(target.scroll - this.visual.scroll) > this.area.clientHeight) {
       cancelAnimationFrame(this.frame); this.frame = null;
+      this.velocity = { x: 0, y: 0, scroll: 0 };
       this.visual = { ...target }; this.draw();
     } else if (!this.frame) {
       this.lastFrame = performance.now() - 16;
@@ -102,18 +106,26 @@ export class TypingView {
     this.caret.style.transform = `translate3d(${this.visual.x}px,${this.visual.y}px,0)`;
   }
   animate(now) {
-    // One clock and one interpolation factor for text and caret. Equal changes
-    // in line position and scroll cancel exactly, avoiding a vertical bounce.
-    const blend = 1 - Math.exp(-Math.min(64, now - this.lastFrame) / 22);
+    // An analytic critically damped spring preserves velocity when a new key
+    // changes the target. Unlike exponential easing it accelerates from rest,
+    // rather than jumping through half a character on the very first frame.
+    // Text and caret share the same clock, preserving their vertical alignment.
+    const elapsed = Math.max(0, Math.min(64, now - this.lastFrame)) / 1000;
+    const frequency = 46, decay = Math.exp(-frequency * elapsed);
     this.lastFrame = now;
-    let distance = 0;
+    let distance = 0, speed = 0;
     for (const key of ['x', 'y', 'scroll']) {
-      this.visual[key] += (this.target[key] - this.visual[key]) * blend;
+      const offset = this.visual[key] - this.target[key];
+      const coefficient = this.velocity[key] + frequency * offset;
+      this.visual[key] = this.target[key] + (offset + coefficient * elapsed) * decay;
+      this.velocity[key] = (this.velocity[key] - frequency * coefficient * elapsed) * decay;
       distance = Math.max(distance, Math.abs(this.target[key] - this.visual[key]));
+      speed = Math.max(speed, Math.abs(this.velocity[key]));
     }
-    if (distance < .08) this.visual = { ...this.target };
+    const settled = distance < .02 && speed < 1;
+    if (settled) { this.visual = { ...this.target }; this.velocity = { x: 0, y: 0, scroll: 0 }; }
     this.draw();
-    this.frame = distance < .08 ? null : requestAnimationFrame(time => this.animate(time));
+    this.frame = settled ? null : requestAnimationFrame(time => this.animate(time));
   }
   destroy() {
     this.resize.disconnect();
