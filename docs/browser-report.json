@@ -1,0 +1,56 @@
+{
+  "testedAt": "2026-10-21T17:19:29.274Z",
+  "browser": "155.0.8059.85",
+  "checks": [
+    "fresh library with usable Ukrainian demo",
+    "real Unicode typing, strict mistakes, word backspace, reload persistence",
+    "FB2 metadata, paragraphs, Cyrillic, emoji, binary-cover exclusion",
+    "compressed EPUB, OPF spine order, percent-encoded paths, skipped assets",
+    "Windows-1251 and UTF-16 FB2 encodings",
+    "invalid input reports failure and removes partial import",
+    "chapter navigation, completion and restart",
+    "relaxed error mode, appearance settings persistence and theme",
+    "100 MiB FB2 imports while genuine keyboard input continues",
+    "bounded character DOM, fast reopen, immediate page-close progress recovery",
+    "chunk transition and backspace across a stored fragment boundary",
+    "64 MiB EPUB single-paragraph chapter imports without full expansion on main thread",
+    "large import cancellation cleans up partial records",
+    "interrupted import is reclaimed on reload using browser Web Locks",
+    "export and restore of local progress backup",
+    "library search and confirmed deletion",
+    "mobile library and reader layout without horizontal overflow"
+  ],
+  "metrics": {
+    "largeFileBytes": 113508880,
+    "largeImportWallMs": 9096,
+    "responsiveness": {
+      "frameCount": 695,
+      "p95FrameMs": 13.5,
+      "maxFrameMs": 26.799999999999955,
+      "longTaskCount": 0,
+      "maxLongTaskMs": 0,
+      "mainJSHeapBytes": 6106093
+    },
+    "largeBook": {
+      "totalChars": 55800014,
+      "chunkCount": 46667,
+      "workerImportMs": 9002
+    },
+    "largeBookOpenMs": 69,
+    "largeTyping": {
+      "samples": 100,
+      "p95EventToFrameMs": 14.599999904632568,
+      "maxMs": 18.5
+    },
+    "largeEpub": {
+      "archiveBytes": 230202,
+      "uncompressedTextBytes": 67437000,
+      "totalChars": 37170022,
+      "chunks": 31236,
+      "wallMs": 4173,
+      "workerImportMs": 4092
+    }
+  },
+  "errors": [],
+  "limits": "Synthetic files on this computer. Main-thread heap and frame timing only; peak process-family RAM, CPU, mobile hardware and arbitrary real-world books not measured."
+}

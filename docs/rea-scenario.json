@@ -1,0 +1,6 @@
+{
+  "browser": { "mode": "launch", "executable_path": "C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe" },
+  "start_url": { "url": "https://typersguild.com/books/alice-in-wonderland/chapter/4" },
+  "actions": [{ "step_id": "trainer-ready", "action": "wait_for", "locator": { "kind": "css", "selector": "main main:has-text(\"Sign in to save your progress\")" }, "state": "visible", "timeout_ms": 30000 }],
+  "capture": { "at_end": ["dom", "accessibility", "url"] }
+}

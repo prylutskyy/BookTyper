@@ -1,0 +1,14 @@
+{
+  "testedAt": "2026-10-21T17:56:05.655Z",
+  "baseURL": "http://127.0.0.1:5173/BookTyper/",
+  "checks": [
+    "static website and relative asset paths",
+    "bundled import Worker",
+    "FB2 and compressed EPUB import",
+    "real typing and reload journal",
+    "mobile theme control and navigation scroll reset",
+    "no external network requests"
+  ],
+  "errors": [],
+  "external": []
+}

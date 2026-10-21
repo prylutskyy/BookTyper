@@ -1,0 +1,811 @@
+{
+  "capturedAt": "2026-10-21T17:21:44.694Z",
+  "parentEvidenceId": "ev_73e69b0a853ff5e1b0a5806bfc12580c93d3572c488ef8b4d8d546fa9707c23a",
+  "scripts": [
+    {
+      "url": "https://typersguild.com/_next/static/chunks/00xudsp3l0kmc.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "00xudsp3l0kmc.js",
+      "bytes": 1122,
+      "sha256": "64efa461d88e4efa3987353e0971d8d20f80fbc5a3dbcd2a37974d6c096579a0",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/018xv1tq010hn.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "018xv1tq010hn.js",
+      "bytes": 1117,
+      "sha256": "fd10a38a02dba020efb890c35ae861a6f2457309988255fe016185aefdaba2d7",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/01djq-sj5eqo-.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "01djq-sj5eqo-.js",
+      "bytes": 6484,
+      "sha256": "39950470693d13c8e43a6e94024371cd812b4e4c683208c3f5446740c854cc87",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0206bpg3obq96.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0206bpg3obq96.js",
+      "bytes": 1029,
+      "sha256": "7fd7e5903881936abb51c0100531cb6993c2dfb124c196591dfa6ab4025965a1",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/027ji9ntby1og.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "027ji9ntby1og.js",
+      "bytes": 33000,
+      "sha256": "1c16640a46955e9eb494e7c6153da6fc00dc8fd493db1d7257d7aecd728f313b",
+      "terms": [
+        "epub",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/03pxqmq470_tt.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "03pxqmq470_tt.js",
+      "bytes": 1132,
+      "sha256": "e29972ca1ba1491cee0dbeafea7ed19cd086957afb12870f1339b665247cdae7",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/08-fzsuqwhwcf.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "08-fzsuqwhwcf.js",
+      "bytes": 130446,
+      "sha256": "34cbbcd0625ebf24783aa436ee82cb4de1b2df37d1198216b42954f4110bc05d",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0a-wfdxbcc75a.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0a-wfdxbcc75a.js",
+      "bytes": 32835,
+      "sha256": "5a50902748462c9376574165006b1b0f52eb86afe306dc451e9556ec190fadfe",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0aoso15an422g.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0aoso15an422g.js",
+      "bytes": 1130,
+      "sha256": "2d3500f384167afff5c7b4a1c9ae0e8560d3deedc31d1be40515d92cd8bf185e",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0cugipn6dn5xv.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0cugipn6dn5xv.js",
+      "bytes": 23436,
+      "sha256": "64e02a03a5110f3b90de8b4a21780f3999b1c6f3e0e609db57160f5e66dba274",
+      "terms": [
+        "Sign in to save your progress"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0cz_dtcolpxmd.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0cz_dtcolpxmd.js",
+      "bytes": 1128,
+      "sha256": "4b27959dd973a16015f23262ba4d5e981eff6936b423e27c3d10281ed6af4174",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0cz1d0mv5g_q7.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0cz1d0mv5g_q7.js",
+      "bytes": 112594,
+      "sha256": "0973c1d64c88adc8e3c950410cb58b288f72118d5965b78049438deb8f2f9683",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0d0c2lhyi0q_9.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0d0c2lhyi0q_9.js",
+      "bytes": 1064,
+      "sha256": "61b3b0f2d7b65fe7a4b9c54436b382833852b7b3a4d19901fb8309333b712b2d",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0docbe42mxyna.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0docbe42mxyna.js",
+      "bytes": 10927,
+      "sha256": "bb2eb80941b6c5445bd94b6a94f06700276ab90bc8813414d460ac3c32f08012",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0dx80asjm052j.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0dx80asjm052j.js",
+      "bytes": 179399,
+      "sha256": "b47e8548615d82f926995d1c55f89162ae1892ad9ad19c4cd3353a419320a2e6",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0fwoccxd71joj.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0fwoccxd71joj.js",
+      "bytes": 1103,
+      "sha256": "9d036bb9c32ce0fe55a9ae46dd8f60aa804b54071ef552fafdea74106d78f978",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0gp5aab4tvo29.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0gp5aab4tvo29.js",
+      "bytes": 23521,
+      "sha256": "699eed74e8af005875b178615225f4149c23a36f10c038c2bcf382c7941a9060",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0hkp5s8gz-ssh.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0hkp5s8gz-ssh.js",
+      "bytes": 1100,
+      "sha256": "72f6f3e5e612e75f9e2e6ba45d8ff1fcfda4ff5e354819c41dcaf2e9a0ed18bb",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0i2x3t5aersng.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0i2x3t5aersng.js",
+      "bytes": 9314,
+      "sha256": "8ac1688e21e1774c928ff50477bb76c6c0acc5c9a9942d3d8b119918faf29296",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0jphh-rntprt_.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0jphh-rntprt_.js",
+      "bytes": 216949,
+      "sha256": "eec54e8a61f689873c8640978d29bb906ff1e0a22c3f97c7f67b6c362dfef153",
+      "terms": [
+        "localStorage"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0jqjz2a_kzccd.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0jqjz2a_kzccd.js",
+      "bytes": 33658,
+      "sha256": "5c1d02d54da9bbbf316df89e2ed46f21a8fdf474aabe0a6991740645bed5ec6e",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0jriducakwooy.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0jriducakwooy.js",
+      "bytes": 39279,
+      "sha256": "ef7597348a62a11e71bb5487e0d7b263d74a92caf9080d9655cd28b39fb055c0",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0k6lwrq_rexc1.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0k6lwrq_rexc1.js",
+      "bytes": 1114,
+      "sha256": "82a3821eef0c30e246cc0e6565dff1c76de4703200fe4ac34db4bb14039b89b2",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0lao7ziebdq7t.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0lao7ziebdq7t.js",
+      "bytes": 1101,
+      "sha256": "6a4b03b2c6f52cca55e2e3b5309f52f7a3b203f6807f6919e505b2b72d2e6c9d",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0m5l-1kvyw32v.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0m5l-1kvyw32v.js",
+      "bytes": 124478,
+      "sha256": "2af13143c7b2a8c56a48d46e1a29c6f66565d21c83e9b8c2d2f3046a591d58e8",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0qa_kwzimmdy7.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0qa_kwzimmdy7.js",
+      "bytes": 136765,
+      "sha256": "68ee31b340fcbd6934cc5c1b6c99503a95e21a117a99e71ead85ce777554c2b0",
+      "terms": [
+        "Sign in to save your progress",
+        "stopOnError"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0rq-eddvebjm4.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0rq-eddvebjm4.js",
+      "bytes": 20752,
+      "sha256": "e47531bde7c7f1ff530ffdbda8aec6ec2ca5757dc565c3191d6887456041bc98",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0sm9vnc1y79s9.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0sm9vnc1y79s9.js",
+      "bytes": 28877,
+      "sha256": "06d4f30b1bae1911ce0d1ab7af48f6fa98044d5d4d9e84dd5d04d772aedab007",
+      "terms": [
+        "stopOnError"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0tgmpvajptn81.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0tgmpvajptn81.js",
+      "bytes": 22270,
+      "sha256": "a9432bf19c218eee6e260fa005b055289f01868a592ff2b2b02fca78f6181b05",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0ttjdpgb-ul0s.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0ttjdpgb-ul0s.js",
+      "bytes": 28005,
+      "sha256": "eda77fa80de2251ac500d15b05eb6c28091738c886d50057b856959d225eaf9e",
+      "terms": [
+        "epub",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0uhfckz__9lvg.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0uhfckz__9lvg.js",
+      "bytes": 1187,
+      "sha256": "00e4c493942fe8b8623a298613f7c13f849bf9014aaf1b9023996c9597b60829",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/0ya5733ajuqwf.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "0ya5733ajuqwf.js",
+      "bytes": 26114,
+      "sha256": "78ee0d9f632c4dbf39a4beea5946bfa12180dddb3b69f690997271f0a0f4aa0d",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1_c7l1nq5alj7.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1_c7l1nq5alj7.js",
+      "bytes": 1117,
+      "sha256": "90be90f39dc81b259bf39a1f7caf2c0843a0896a179eab5795ee6504815235d8",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1_lfxhq3c9vkx.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1_lfxhq3c9vkx.js",
+      "bytes": 235950,
+      "sha256": "70f1f3edc52bb0ccda28e8ddf3b1a8fd5e93e9edf8dbe87bbc582be703a870b6",
+      "terms": [
+        "epub"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/12zvn8srbcim9.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "12zvn8srbcim9.js",
+      "bytes": 29236,
+      "sha256": "f9e276c5ea3156be2c41f8d632ceee638add057efd492eee983f075b96d64771",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/15ye44jshir7e.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "15ye44jshir7e.js",
+      "bytes": 1058,
+      "sha256": "5e2dcedd94604c16805a3ee605ce996c39398a7613013933e1e6ac459ff1b176",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1657fm85i57s9.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1657fm85i57s9.js",
+      "bytes": 25409,
+      "sha256": "f5831df14328f1a1bd008898272326ca5b9075393ead08468a99b7734d331fd5",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/187nwxz2be7sg.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "187nwxz2be7sg.js",
+      "bytes": 1127,
+      "sha256": "3ebc838f8e8ba8c65f20e93147545a53357ba341a7188fa46795718b2f429361",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/18ie0jlu9gvbo.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "18ie0jlu9gvbo.js",
+      "bytes": 53692,
+      "sha256": "b0ea5094368d8c79f5e25267eaa03e42feeb54b3783e2e6f5531effe32b4626b",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/18ro8gga6xi9i.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "18ro8gga6xi9i.js",
+      "bytes": 22229,
+      "sha256": "77d9a9db842b14309a4bc5e946f06c4eabe8a5fa15255570ceebdf6099e8c58c",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/19f35szqetl76.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "19f35szqetl76.js",
+      "bytes": 25500,
+      "sha256": "1369c9c4a7045ca56063cdc4bc90865af06ce5a9269599abe11097b75a2466ca",
+      "terms": [
+        "epub"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1dnckstljdnat.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1dnckstljdnat.js",
+      "bytes": 34711,
+      "sha256": "bf69d3a21124f283b3b2efecb1196fcc45261136166032ffa6584767a4ab5507",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1efiok-uu0ffh.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1efiok-uu0ffh.js",
+      "bytes": 32452,
+      "sha256": "0f30e6c1701122d0e7a444f293bf114c3355a3a2cf5d814e305c672498308b43",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1esju-cjcq_vd.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1esju-cjcq_vd.js",
+      "bytes": 32896,
+      "sha256": "3201d4f61c7dcd7bf0ac3385b2dd859a4cb9c8a73d1f09930a466ead8a9f4f1c",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1f04nup3ue9hj.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1f04nup3ue9hj.js",
+      "bytes": 1054,
+      "sha256": "96c6382a8d77bc2a6ff512030010d8c8e51217386c9d28ead9286558c39190ff",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1fnbz41kk8v3k.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1fnbz41kk8v3k.js",
+      "bytes": 6742,
+      "sha256": "93b6c85a26994e038a6f323868351d966f4906be2973af756bd90aba7a82cfef",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1gzomv65n65mh.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1gzomv65n65mh.js",
+      "bytes": 1127,
+      "sha256": "b65feb122e0351f8fe9f4a5710bcfa388fb5e3a053e7027b77e1f786b731710b",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1nemj1hp5ov68.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1nemj1hp5ov68.js",
+      "bytes": 29656,
+      "sha256": "1ef301c50bd82aa75bf1b0e65e07224e56ecf057d42ea833c9089355d4807a51",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1nvdt2kthh7id.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1nvdt2kthh7id.js",
+      "bytes": 1128,
+      "sha256": "5adf887a3858a0ae82b15d090a89ad9bec52d7dc83122eef160e27ee391cccdf",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1pv0rcxhp1m7n.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1pv0rcxhp1m7n.js",
+      "bytes": 498799,
+      "sha256": "12776639b137890c05c109d6f10889e95da0733fb4fbdf0f2e38522c445bc396",
+      "terms": [
+        "indexedDB",
+        "localStorage",
+        "epub",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1u9qhr-dnrb24.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1u9qhr-dnrb24.js",
+      "bytes": 18287,
+      "sha256": "a3430a359e9e46355a4cc8c02d771403ebc8a1123b26d015c7baa51396dadda4",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1ulurh_fro8pb.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1ulurh_fro8pb.js",
+      "bytes": 1099,
+      "sha256": "0a63d4310ce4d3f255d35f604b0810abe5b8c8a95ec1610c0d7563823c91c5e8",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/1uroy4to9dn89.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "1uroy4to9dn89.js",
+      "bytes": 21499,
+      "sha256": "a9d8b2cd220897195dfc88fd376bc99760151d52651ab55241f8c5f6a6ff4140",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2_vn-mjssbpab.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2_vn-mjssbpab.js",
+      "bytes": 131788,
+      "sha256": "0dc0398562343a37fcb0ff51b81390f11e86e8966a2e24c95f0471edd4b1c8a2",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/21ds0vuckjygh.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "21ds0vuckjygh.js",
+      "bytes": 40389,
+      "sha256": "ca9254f1eb77fd74c2b3ec0c980a5c9c2f7753a68f4d3314bf4ca4e0f7316717",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/21ds4-h71d0tq.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "21ds4-h71d0tq.js",
+      "bytes": 1141,
+      "sha256": "154f58365af72e6d9cd4d30967ae91b8bd9373f6f809cbd4cb5cf390ca0ca23c",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/21ecwbhh1nrtk.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "21ecwbhh1nrtk.js",
+      "bytes": 34240,
+      "sha256": "dd275ac2d1e7d3f825973f98bb8cb02f1b06aa684a87894a4b578ad1472db240",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/23_j2m50i-36-.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "23_j2m50i-36-.js",
+      "bytes": 27595,
+      "sha256": "4ff19839010e025146a9bc572491c9395c5960f60d7e79384d7c92d6a57a9e7c",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/28f6-0kvg-4_s.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "28f6-0kvg-4_s.js",
+      "bytes": 33327,
+      "sha256": "94a1cc50c388a16bcd06dc3a95b5cfd9120f219348602fa7288447968c6d42bc",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2c7sthsty1n3r.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2c7sthsty1n3r.js",
+      "bytes": 33508,
+      "sha256": "8ff5349721e08468b30f0567c8516c06aa4f683b8f9a5d09828f9fc2920eea3a",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2e_r__nwpeofc.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2e_r__nwpeofc.js",
+      "bytes": 34027,
+      "sha256": "c8c401a553e99e6953ab709329c778f0b7b6f89fd12fdd34671445e25d0f762a",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2f5hx6lee2_2d.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2f5hx6lee2_2d.js",
+      "bytes": 24733,
+      "sha256": "c54973d1969631e06cf5c680291d51ffb09481da7e15ecd7f575ff51af76775b",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2hrrbsa1zdujq.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2hrrbsa1zdujq.js",
+      "bytes": 24712,
+      "sha256": "b4e15e7a785b4aef81aa37830eb713482ae266a36653078108ef0e1aed748159",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2hs3e8-qw6-32.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2hs3e8-qw6-32.js",
+      "bytes": 1142,
+      "sha256": "4f3f29ecb32d99e6cd2d487d9922f42d1b6e1fef30e4bdb92cad36ba2c5a5a98",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2i58zmw1dxzqu.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2i58zmw1dxzqu.js",
+      "bytes": 34628,
+      "sha256": "40ed82728d642d6f0c010b24893fadf1522474854980b5a3febcc7af2a7adb42",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2ipsmnbv1fft1.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2ipsmnbv1fft1.js",
+      "bytes": 43767,
+      "sha256": "35510d6ccd8a195e323d2a6c0070bfd0a72279afa773658d78bf98491857f562",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2kgwkvc8az1ea.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2kgwkvc8az1ea.js",
+      "bytes": 30743,
+      "sha256": "d3582d7c7657912a8ba4eb905f48639f59d183cb6244dc8000a14b9c5b0c8bb0",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2mr0zfd8v8p43.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2mr0zfd8v8p43.js",
+      "bytes": 26023,
+      "sha256": "15dfbffa52e24fb933c013fa0bea2a85b498365517308e16da065d28b1a9dfd9",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2mu3yq9fo552y.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2mu3yq9fo552y.js",
+      "bytes": 39215,
+      "sha256": "7bee5f950d26eb7370fc155359d2e4491ac53b7fc8d617a0a80bf84f087ab4da",
+      "terms": [
+        "indexedDB",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2ntikncx_gqgk.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2ntikncx_gqgk.js",
+      "bytes": 42718,
+      "sha256": "f8a4ca5f98332c92884f21c040c1aedfe58a45bd888b51680b7873d945a2b7be",
+      "terms": [
+        "localStorage",
+        "epub"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2olbinmoedg31.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2olbinmoedg31.js",
+      "bytes": 51762,
+      "sha256": "532e90e2c8e799a77671a65f25484a08bf5587d981d2a04aa5404091033d1ea9",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2pdhj1kp68xb_.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2pdhj1kp68xb_.js",
+      "bytes": 36655,
+      "sha256": "5ad860880c9a492fdae19c5c30352426c479de9a59b4a9a9490d7c8f1b907d8c",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2q1z9s6bzt4qm.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2q1z9s6bzt4qm.js",
+      "bytes": 377610,
+      "sha256": "9a9d7d66c798bfff8cc36a259c2a4e87f998e5a8c1c506bc7b49934274224829",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2rf_hmutxwvnb.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2rf_hmutxwvnb.js",
+      "bytes": 614528,
+      "sha256": "b81583af8b8780c6610074dba23a0a17d054373ca0e2beabe61dc1e29e7d094b",
+      "terms": [
+        "indexedDB",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2u3k_4rbdt2q2.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2u3k_4rbdt2q2.js",
+      "bytes": 1127,
+      "sha256": "203f58c3e678a59b43bc7b2fd145ad35931f66f780590235134b00af2fc86c46",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2w6jcqg_gugx-.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2w6jcqg_gugx-.js",
+      "bytes": 21687,
+      "sha256": "0bab246e9e60bc5f8a15bd18b25661445f3f350f116398e10a084c73b9078cc6",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2x_esko7iym2h.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2x_esko7iym2h.js",
+      "bytes": 71553,
+      "sha256": "e2aaccc401dbb2a878d2f7b6d195eacb9fa6ef15e4fb6ae9935fda1196afb0c6",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2xzkoojapnajx.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2xzkoojapnajx.js",
+      "bytes": 28982,
+      "sha256": "daf177f9ab1bd17b527b05026ad502a5ea33c7d3d22c99b9de72d461e6a08041",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2ychekcwmp1h8.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2ychekcwmp1h8.js",
+      "bytes": 1126,
+      "sha256": "99e4183732aafa2c1570133b47566659d74be55b49cffb4467debc2f5608926e",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2ygy2n85ti-hh.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2ygy2n85ti-hh.js",
+      "bytes": 31836,
+      "sha256": "6615f7c6728eb474976c5ab94a94da2041dab123399314b472ba6e384d1512a9",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/2zluidpjmssor.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "2zluidpjmssor.js",
+      "bytes": 50354,
+      "sha256": "ba982fbe92cc6d025ecf5fa1b1e34a229085d241364a40554a58929b4da863d8",
+      "terms": [
+        "epub",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3_5292qu91r-p.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3_5292qu91r-p.js",
+      "bytes": 34790,
+      "sha256": "b055241016f9243a2a44fefed541052f04642d720608fe004cefda81a13b40e0",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3-c27g6e3t3uw.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3-c27g6e3t3uw.js",
+      "bytes": 522889,
+      "sha256": "454554af4c6a61c9ebddbec46076431854babd448834b2b00f7091e91ec82e6b",
+      "terms": [
+        "epub"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3353l4w21x3w_.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3353l4w21x3w_.js",
+      "bytes": 1140,
+      "sha256": "755c109f5c866912d4854bf6ee2cf90fb08a499cf8a29f4dd40c903b3bc49e3f",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/34j4l-u8hzuc7.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "34j4l-u8hzuc7.js",
+      "bytes": 20953,
+      "sha256": "0a7ecf7c00ff45700b280fe3579043458b07a1a65420e1e722a1b5672bc23737",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/37_hhodz1p-o0.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "37_hhodz1p-o0.js",
+      "bytes": 46642,
+      "sha256": "62f614f5bf9b87aec3c0bfcef818fd404bdf00b4f832ebc055f7b3b6348758c6",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/37sfwd5uhcxsb.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "37sfwd5uhcxsb.js",
+      "bytes": 46241,
+      "sha256": "1fb2d08eaf36cf0fea57f8aa57eba3aa4c0445fdcfad1a56dd2d035e7ed50cc4",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3a_2u-e6l3abk.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3a_2u-e6l3abk.js",
+      "bytes": 8595,
+      "sha256": "e1d579887b3f29a8bf25d5c16643ad60170dba24ba06ca8dae3e81538d466c49",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3be6j-xh5wpmr.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3be6j-xh5wpmr.js",
+      "bytes": 25263,
+      "sha256": "5fc7f7e7ee454ba316c22c50f315c320e1f1a1f401b4b184312b8de7be06a642",
+      "terms": [
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3bysgj23pa3zr.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3bysgj23pa3zr.js",
+      "bytes": 29317,
+      "sha256": "df1520949fb2931c1ea9597c3c314784862c1b98b0e01e172bad7f3c37ad2f02",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3f7tr9ypqjjlt.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3f7tr9ypqjjlt.js",
+      "bytes": 1445,
+      "sha256": "34271a500039e5de42a5ae981c4be8ba9fa343cdb5d976bd24dff7317e60564d",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3g6o8x_8zq-8_.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3g6o8x_8zq-8_.js",
+      "bytes": 37766,
+      "sha256": "18cbac58c9b40d17cf4c7ad26d4ac916b26e168ba566c6fb6a6f418c6468dff6",
+      "terms": [
+        "epub",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3h0ekdpmb530z.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3h0ekdpmb530z.js",
+      "bytes": 1099,
+      "sha256": "d229f08086f6fea91b1f87a2e0260987c6a6fa75fd34d25528e69c4be063383e",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3mgah5-ashom8.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3mgah5-ashom8.js",
+      "bytes": 40204,
+      "sha256": "f0c3c2262f54f514f1680ef410126858d7523c638b40e31472f1bf98dcf0661c",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3r244sonsqgk2.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3r244sonsqgk2.js",
+      "bytes": 35386,
+      "sha256": "b94479709c1db275aeea5a3716f1d31b12edf4d0925a716c3e043cf1065e7283",
+      "terms": [
+        "epub",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3s8phtux3sp61.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3s8phtux3sp61.js",
+      "bytes": 47052,
+      "sha256": "beee7519cde9ca064d75c68238eda85de1842cf71b9de298a987814f1800ae37",
+      "terms": [
+        "epub",
+        "requestAnimationFrame"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3v5pi886rektv.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3v5pi886rektv.js",
+      "bytes": 51762,
+      "sha256": "ee19a548ce681c320321617af93ed1c00fcbc5b29a6d0e9dcba3016b93525b7e",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3w_j329b66iub.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3w_j329b66iub.js",
+      "bytes": 32835,
+      "sha256": "a47e891909d0d0e31e49fbaa160bea9c9c95c250a8abc836470e661a15a07ad8",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3y4kbqorkr0s8.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3y4kbqorkr0s8.js",
+      "bytes": 1115,
+      "sha256": "9ad00d326b57e2e2d5e2c35ab31c3316def54f89303cb138b8c6c4bf88e0d1d8",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3y5ms00nk9-us.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3y5ms00nk9-us.js",
+      "bytes": 230427,
+      "sha256": "5873c2ce10ef55fe0d27e7c69c4def2481a6317e7dafff7120bc4d5f4932d3f2",
+      "terms": [
+        "localStorage"
+      ]
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/3zm34m9y8geen.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "3zm34m9y8geen.js",
+      "bytes": 1121,
+      "sha256": "95567a35da848eda5be5d1366f0f8fe265c7c02f74029f987438acf7e3d8a534",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/41eqh3rr_zjpa.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "41eqh3rr_zjpa.js",
+      "bytes": 44735,
+      "sha256": "2ce65aecaeacf819e2ce8735ab7860cdceacebdfc3d7aafa7fc56d1a53ab3438",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/4302k4eresje7.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "4302k4eresje7.js",
+      "bytes": 46241,
+      "sha256": "341930713e286840b28edd656babedbadd2522b574311c349ddfb4371d3bd712",
+      "terms": []
+    },
+    {
+      "url": "https://typersguild.com/_next/static/chunks/turbopack-0ij9x4zjf8now.js?dpl=dpl_DvF6Y2C7Dk5Ptsi1fxpY9CBZhb2N",
+      "filename": "turbopack-0ij9x4zjf8now.js",
+      "bytes": 11727,
+      "sha256": "c23f7b25d3905391e8c934ed42cb2c025e657315a2ce460760f4b9bebd714c66",
+      "terms": []
+    }
+  ]
+}
