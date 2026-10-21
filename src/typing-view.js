@@ -10,7 +10,10 @@ export class TypingView {
     this.caret = area.querySelector('#typing-caret');
     this.nodes = new Map();
     this.position = 0;
-    this.scroll = 0;
+    this.visual = null;
+    this.motion = matchMedia('(prefers-reduced-motion: reduce)');
+    this.onMotion = () => this.update(this.position, true);
+    this.motion.addEventListener('change', this.onMotion);
     this.resize = new ResizeObserver(() => this.update(this.position, true));
     this.resize.observe(area);
   }
@@ -25,6 +28,7 @@ export class TypingView {
         history = before.filter(node => node.offsetTop >= last.offsetTop - line * 2 - 1);
       }
     }
+    const oldOrigin = history[0]?.offsetTop;
     this.history.replaceChildren(...history);
     this.upcoming.replaceChildren();
     this.nodes.clear();
@@ -38,7 +42,15 @@ export class TypingView {
     }
     this.text.replaceChildren(fragment);
     this.position = position;
-    this.update(position, true);
+    if (history.length && this.visual) {
+      // Removing old lines changes the coordinate origin, not their visible
+      // position. Rebase an in-flight animation rather than snapping it.
+      const shift = oldOrigin - history[0].offsetTop;
+      this.visual.y -= shift; this.visual.scroll -= shift;
+      if (this.target) { this.target.y -= shift; this.target.scroll -= shift; }
+      this.draw();
+      this.update(position);
+    } else this.update(position, true);
   }
   character(char, offset) {
     const node = document.createElement('span');
@@ -70,19 +82,43 @@ export class TypingView {
     // One geometry read per animation frame, before statistics DOM writes.
     const top = node.offsetTop, left = node.offsetLeft;
     const size = parseFloat(getComputedStyle(this.flow).fontSize);
-    this.scroll = Math.max(0, top - 65);
-    if (snap) this.flow.classList.add('instant');
-    this.flow.style.transform = `translate3d(0,${-this.scroll}px,0)`;
+    const line = parseFloat(getComputedStyle(this.flow).lineHeight);
+    const anchor = Math.min(line * 2 + 8, this.area.clientHeight * .3);
+    const target = { x: left - 1, y: top, scroll: Math.max(0, top - anchor) };
+    // A line wrap must not sweep the caret diagonally across the paragraph.
+    if (this.visual && this.target && Math.abs(top - this.target.y) > line / 2) this.visual.x = target.x;
+    this.target = target;
     this.caret.style.height = `${size * 1.2}px`;
-    this.caret.style.transform = `translate3d(${left - 1}px,${top}px,0)`;
-    if (snap) {
-      // Commit the new coordinate origin before restoring movement transitions.
-      this.flow.getBoundingClientRect();
-      this.flow.classList.remove('instant');
+    if (snap || !this.visual || this.motion.matches) {
+      cancelAnimationFrame(this.frame); this.frame = null;
+      this.visual = { ...target }; this.draw();
+    } else if (!this.frame) {
+      this.lastFrame = performance.now() - 16;
+      this.animate(performance.now());
     }
+  }
+  draw() {
+    this.flow.style.transform = `translate3d(0,${-this.visual.scroll}px,0)`;
+    this.caret.style.transform = `translate3d(${this.visual.x}px,${this.visual.y}px,0)`;
+  }
+  animate(now) {
+    // One clock and one interpolation factor for text and caret. Equal changes
+    // in line position and scroll cancel exactly, avoiding a vertical bounce.
+    const blend = 1 - Math.exp(-Math.min(64, now - this.lastFrame) / 22);
+    this.lastFrame = now;
+    let distance = 0;
+    for (const key of ['x', 'y', 'scroll']) {
+      this.visual[key] += (this.target[key] - this.visual[key]) * blend;
+      distance = Math.max(distance, Math.abs(this.target[key] - this.visual[key]));
+    }
+    if (distance < .08) this.visual = { ...this.target };
+    this.draw();
+    this.frame = distance < .08 ? null : requestAnimationFrame(time => this.animate(time));
   }
   destroy() {
     this.resize.disconnect();
     clearTimeout(this.idle);
+    cancelAnimationFrame(this.frame);
+    this.motion.removeEventListener('change', this.onMotion);
   }
 }

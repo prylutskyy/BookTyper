@@ -53,6 +53,8 @@ export class ChunkBuilder {
 const aliases = { '’': "'", '‘': "'", 'ʼ': "'", '“': '"', '”': '"', '„': '"', '«': '"', '»': '"', '—': '-', '–': '-', '\u00a0': ' ' };
 export function equivalent(actual, expected, relaxed) {
   if (actual === expected) return true;
+  // Paragraph breaks are layout, so either Enter or Space advances one break.
+  if (actual === ' ' && expected === '\n') return true;
   return relaxed && (aliases[actual] || actual) === (aliases[expected] || expected);
 }
 export function nextCharacter(text, offset) { return String.fromCodePoint(text.codePointAt(offset)); }

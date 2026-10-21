@@ -42,7 +42,7 @@ try {
   await page.locator('.dialog-close').click(); await page.locator('#typing-input').focus();
   await page.screenshot({ path: path.join(output, 'production-reader-mobile.png'), fullPage: true });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-  await page.locator('[data-view="library"]').click();
+  await page.locator('#back-library').click();
   await page.locator('#upload-card').waitFor();
   assert.equal(await page.evaluate(() => scrollY), 0);
   await page.screenshot({ path: path.join(output, 'production-library-mobile.png'), fullPage: true });

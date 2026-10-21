@@ -47,7 +47,7 @@ try {
   await type('Xо'); await page.locator('#typing-input').press('Backspace');
   await page.reload(); await page.locator('#upload-card').waitFor(); await id().click(); await focus();
   assert.deepEqual(await wrongOffsets(), [0], 'Immediate reload must restore remaining mistakes');
-  await page.locator('[data-view="library"]').click(); await id().click(); await focus();
+  await page.locator('#back-library').click(); await id().click(); await focus();
   assert.deepEqual(await wrongOffsets(), [0], 'Reopening a book must preserve mistakes');
   console.log('PASS mistake persistence after reload and reopening');
 

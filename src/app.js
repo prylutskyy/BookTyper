@@ -2,6 +2,7 @@ import './style.css';
 import { dbPromise, listBooks, cleanupInterruptedImports, putBook, putChunks, getChunk, loadProgress, saveProgress, deleteBook, allProgress } from './db.js';
 import { ChunkBuilder, equivalent, nextCharacter, previousOffset, chapterAt } from './text.js';
 import { TypingView } from './typing-view.js';
+import { KeyboardGuide } from './keyboard.js';
 
 const icons = {
   book: '<path d="M3 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-3H3zM21 4h-6a3 3 0 0 0-3 3v14a4 4 0 0 1 4-3h5z"/>',
@@ -28,7 +29,7 @@ let books = [], progressMap = new Map(), current = null, chunk = null, prefetche
 const coverURLs = new Map();
 let session = { activeMs: 0, last: 0, correct: 0, attempts: 0 }, settings = { theme: 'light', fontSize: 25, relaxed: true, strict: true };
 let saveTimer, viewToken = 0, renderFrame, importing = false, importWorker = null;
-let importQueue = [], activeImportId = null, typingNodes = new Map(), typingView;
+let importQueue = [], activeImportId = null, typingNodes = new Map(), typingView, keyboardGuide;
 let view = 'library', query = '', toastTimer, importTotal = 0, importDone = 0;
 
 function toast(message, error = false) {
@@ -39,6 +40,10 @@ function toast(message, error = false) {
 function applySettings() {
   document.documentElement.dataset.theme = settings.theme;
   document.documentElement.style.setProperty('--typing-size', `${settings.fontSize}px`);
+  document.body.classList.toggle('keyboard-hidden', settings.keyboard === false);
+  const keyboardToggle = document.querySelector('#toggle-keyboard');
+  keyboardToggle?.setAttribute('aria-pressed', String(settings.keyboard !== false));
+  if (keyboardGuide && current) keyboardGuide.update(keyboardGuide.expected);
 }
 async function persistSettings() {
   applySettings(); await (await dbPromise).put('settings', settings, 'preferences');
@@ -108,6 +113,7 @@ async function commitProgress(p = snapshot()) {
 function closeBook() {
   if (current) { clearTimeout(saveTimer); journal(); commitProgress(); }
   typingView?.destroy(); typingView = null;
+  keyboardGuide?.destroy(); keyboardGuide = null;
   if (renderFrame) cancelAnimationFrame(renderFrame); renderFrame = null;
   current = null; chunk = null; prefetched = null; inputQueue = []; advancing = false; viewToken++;
   document.body.classList.remove('reading', 'zen');
@@ -189,18 +195,22 @@ async function openBook(id, target) {
   document.body.classList.add('reading');
   document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
   document.querySelector('#main').innerHTML = `
-    <header class="reader-topbar"><button id="back-library" class="text-button">${icon('back')}До бібліотеки</button><span id="save-status">Прогрес збережено</span><button id="reader-settings" class="icon-button" aria-label="Налаштування набору">${icon('settings')}</button></header>
-    <section class="reader"><div class="reader-heading"><span class="eyebrow">ЧАС ПОБУТИ МІЖ РЯДКАМИ</span><h1>${escape(book.title)}</h1><p>${escape(book.author)}</p></div><div class="reader-stats"><div><strong id="wpm">0</strong><span>слів / хв</span></div><div><strong id="accuracy">100<small>%</small></strong><span>точність</span></div><div><strong id="reader-percent">0<small>%</small></strong><span>книги пройдено</span></div><div><strong id="timer">0:00</strong><span>час практики</span></div></div>
-    <div class="chapter-bar"><button id="chapters" class="text-button">${icon('book')}<span id="chapter-title"></span><span>⌄</span></button><span id="position-label"></span></div>
+    <header class="reader-topbar"><button id="back-library" class="text-button">${icon('back')}До бібліотеки</button><span class="reader-wordmark">${icon('book')}BookTyper<span>.</span></span><span id="save-status">Прогрес збережено</span></header>
+    <aside class="reader-tools" aria-label="Інструменти набору"><button id="chapters" class="reader-tool" title="Зміст книги" aria-label="Зміст книги">${icon('book')}<span>Розділи</span></button><button id="reader-settings" class="reader-tool" title="Налаштування набору" aria-label="Налаштування набору">${icon('settings')}<span>Вигляд</span></button><button id="toggle-keyboard" class="reader-tool" title="Показати або сховати клавіатуру" aria-label="Показати або сховати клавіатуру" aria-pressed="${settings.keyboard !== false}"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M5 9h2m2 0h2m2 0h2m2 0h2M5 12h2m2 0h2m2 0h2m2 0h2M7 15h10"/></svg><span>Клавіші</span></button><button id="zen" class="reader-tool" title="Режим фокусу" aria-label="Режим фокусу" aria-pressed="false"><span class="focus-icon" aria-hidden="true">⛶</span><span>Фокус</span></button></aside>
+    <aside class="reader-shortcuts" aria-label="Підказки набору"><span class="eyebrow">ВАШ РИТМ</span><p><kbd>Пробіл</kbd> / <kbd>Enter</kbd><span>новий абзац</span></p><p><kbd>⌫</kbd><span>стерти символ</span></p><p><kbd>Ctrl</kbd> + <kbd>⌫</kbd><span>стерти слово</span></p><p><kbd>Esc</kbd><span>пауза</span></p></aside>
+    <section class="reader"><div class="reader-heading"><h1>${escape(book.title)}</h1><p>${escape(book.author)}</p></div><div class="reader-stats"><div><strong id="wpm">0</strong><span>слів / хв</span></div><div><strong id="accuracy">100<small>%</small></strong><span>точність</span></div><div><strong id="reader-percent">0<small>%</small></strong><span>книги пройдено</span></div><div><strong id="timer">0:00</strong><span>час практики</span></div></div>
+    <div class="chapter-bar"><span id="chapter-title"></span><span id="position-label"></span></div>
     <div class="typing-area" id="typing-area"><div class="typing-content" aria-hidden="true"><span class="typing-history"></span><div id="text-window" class="text-window"></div><span class="typing-preview"></span><span id="typing-caret"></span></div><p id="accessible-passage" class="sr-only"></p><textarea id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Поле набору тексту книги" aria-describedby="typing-help accessible-passage"></textarea><button id="focus-prompt">Натисніть тут, щоб почати друкувати ${icon('arrow')}</button><div id="completion" hidden><span>✳</span><h2>Книга пройдена!</h2><p>Слово за словом — ви дійшли до останньої сторінки.</p><button id="finish-library" class="primary">До бібліотеки ${icon('arrow')}</button></div></div>
-    <div class="reader-progress"><span id="reader-progress-fill"></span></div><div class="typing-footer" id="typing-help"><span><kbd>Enter</kbd> новий абзац <span class="separator">·</span> <kbd>Backspace</kbd> назад <span class="separator">·</span> <kbd>Esc</kbd> пауза</span><button id="zen" class="text-button">Режим фокусу ⛶</button></div><p class="reader-note">Не поспішайте. Важливий не фініш, а ваш ритм.</p></section>`;
+    <div class="reader-progress"><span id="reader-progress-fill"></span></div><div class="typing-footer" id="typing-help"><span>Новий абзац — <kbd>Пробіл</kbd> або <kbd>Enter</kbd></span><span>Помилка? <kbd>Backspace</kbd></span></div><section id="virtual-keyboard" class="keyboard-panel" aria-label="Підказка клавіатури"></section></section>`;
   document.querySelector('#back-library').onclick = () => navigate('library');
   document.querySelector('#reader-settings').onclick = readerSettings;
   document.querySelector('#chapters').onclick = chapterDialog;
   document.querySelector('#finish-library').onclick = () => navigate('library');
   window.scrollTo({ top: 0, behavior: 'instant' });
   typingView = new TypingView(document.querySelector('#typing-area'));
-  document.querySelector('#zen').onclick = () => { document.body.classList.toggle('zen'); scrollCaret(true); };
+  keyboardGuide = new KeyboardGuide(document.querySelector('#virtual-keyboard'), settings);
+  document.querySelector('#toggle-keyboard').onclick = () => { settings.keyboard = settings.keyboard === false; persistSettings().catch(storageError); scrollCaret(true); };
+  document.querySelector('#zen').onclick = () => { const enabled = document.body.classList.toggle('zen'); document.querySelector('#zen').setAttribute('aria-pressed', String(enabled)); scrollCaret(true); document.querySelector('#typing-input').focus(); };
   const input = document.querySelector('#typing-input');
   input.addEventListener('focus', () => { document.querySelector('#typing-area').classList.add('focused'); scrollCaret(true); });
   input.addEventListener('blur', () => { document.querySelector('#typing-area')?.classList.remove('focused'); session.last = 0; });
@@ -264,7 +274,7 @@ function scrollCaret(snap = false) {
 }
 function onKeydown(event) {
   if (event.isComposing) return;
-  if (event.key === 'Escape') { event.preventDefault(); event.target.blur(); document.body.classList.remove('zen'); }
+  if (event.key === 'Escape') { event.preventDefault(); event.target.blur(); document.body.classList.remove('zen'); document.querySelector('#zen').setAttribute('aria-pressed', 'false'); }
   if (event.key === 'Backspace') { event.preventDefault(); backspace(event.ctrlKey || event.metaKey); }
   if (event.key === 'Enter') { event.preventDefault(); typeText('\n'); }
 }
@@ -294,6 +304,7 @@ function typeText(value) {
     const now = performance.now(), gap = session.last ? Math.min(now - session.last, 10000) : 0;
     session.last = now; session.activeMs += gap; p.activeMs += gap; p.attempts++; session.attempts++;
     const correct = equivalent(actual, expected, settings.relaxed);
+    keyboardGuide?.press(actual, correct);
     const node = typingNodes.get(p.position);
     if (correct) { p.correct++; session.correct++; }
     if (!correct && settings.strict) { node?.classList.add('mistake'); journal(); scheduleUpdate(); continue; }
@@ -388,6 +399,8 @@ function updateReader() {
   const chapter = book.chapters[chapterAt(book.chapters, p.position)];
   document.querySelector('#chapter-title').textContent = chapter?.title || 'Початок книги';
   document.querySelector('#position-label').textContent = `${number(p.position)} / ${number(book.totalChars)} симв.`;
+  const offset = p.position - (chunk?.start || 0);
+  keyboardGuide?.update(chunk && offset < chunk.text.length ? nextCharacter(chunk.text, offset) : '');
 }
 function completeBook() {
   if (!current) return;
@@ -418,6 +431,11 @@ function preferencesMarkup() {
   return `<label class="preference"><span><strong>Тема</strong><small>Світлий або темний простір для практики.</small></span><select id="color-theme" aria-label="Тема"><option value="light" ${settings.theme === 'light' ? 'selected' : ''}>Світла</option><option value="dark" ${settings.theme === 'dark' ? 'selected' : ''}>Темна</option></select></label><label class="preference"><span><strong>Розмір тексту</strong><small>Знайдіть комфортний для очей масштаб.</small></span><select id="font-size" aria-label="Розмір тексту">${[20, 23, 25, 28, 32].map(n => `<option ${settings.fontSize === n ? 'selected' : ''} value="${n}">${n} px</option>`).join('')}</select></label><label class="preference"><span><strong>Зупинятися на помилках</strong><small>Введіть правильний символ, щоб рухатися далі.</small></span><input type="checkbox" id="strict" ${settings.strict ? 'checked' : ''} /></label><label class="preference"><span><strong>Зручна пунктуація</strong><small>Звичайні лапки, апостроф і дефіс замість типографських.</small></span><input type="checkbox" id="relaxed" ${settings.relaxed ? 'checked' : ''} /></label>`;
 }
 function bindPreferences() {
+  const punctuation = document.querySelector('#relaxed').closest('label');
+  punctuation.insertAdjacentHTML('afterend', `<label class="preference"><span><strong>Екранна клавіатура</strong><small>Підсвічування наступної клавіші на великому екрані.</small></span><input type="checkbox" id="keyboard-guide" ${settings.keyboard !== false ? 'checked' : ''} /></label><label class="preference"><span><strong>Розкладка підказки</strong><small>Автоматично за мовою наступної літери або обрана вручну.</small></span><select id="keyboard-layout" aria-label="Розкладка підказки"><option value="auto">Автоматично</option><option value="uk">Українська</option><option value="en">English</option></select></label>`);
+  document.querySelector('#keyboard-layout').value = settings.keyboardLayout || 'auto';
+  document.querySelector('#keyboard-layout').onchange = event => { settings.keyboardLayout = event.target.value; persistSettings().catch(storageError); };
+  document.querySelector('#keyboard-guide').onchange = event => { settings.keyboard = event.target.checked; persistSettings().catch(storageError); scrollCaret(true); };
   document.querySelector('#color-theme').onchange = event => { settings.theme = event.target.value; persistSettings().catch(storageError); };
   document.querySelector('#font-size').onchange = event => { settings.fontSize = Number(event.target.value); persistSettings().catch(storageError); scrollCaret(true); };
   for (const key of ['strict', 'relaxed']) document.querySelector(`#${key}`).onchange = event => { settings[key] = event.target.checked; persistSettings().catch(storageError); };
