@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ChunkBuilder, CHUNK_SIZE, equivalent, chapterAt } from '../src/text.js';
-import { createExtractor, parseMetadata, resolveArchivePath, detectEncoding } from '../src/extract.js';
+import { createExtractor, parseMetadata, parseNavigation, imageReferences, resolveArchivePath, resolveArchiveLocation, detectEncoding } from '../src/extract.js';
 
 function extract(xml, format = 'fb2', stride = 17) {
   const chunks = [], metadata = { title: '', authorParts: [] };
@@ -56,4 +56,26 @@ test('NFC is normalized across producer chunks and soft hyphens do not invent sp
   const chunks = [], b = new ChunkBuilder('unicode', c => chunks.push(c));
   b.text('Cafe'); b.text('\u0301 co\u00adoperate zero\u200bwidth'); b.finish();
   assert.equal(chunks.map(c => c.text).join(''), 'Café cooperate zerowidth');
+});
+
+test('EPUB navigation supplies titles for paragraph anchors, including several in one document', () => {
+  const ncx = '<ncx><navMap><navPoint><navLabel><text>Частина</text></navLabel><content src="part.xhtml"/><navPoint><navLabel><text>РОЗДІЛ 1</text></navLabel><content src="part.xhtml#one"/></navPoint></navPoint><navPoint><navLabel><text>РОЗДІЛ 2</text></navLabel><content src="part.xhtml#two"/></navPoint></navMap></ncx>';
+  assert.deepEqual(parseNavigation(ncx, 'ncx').map(e => e.title), ['Частина', 'РОЗДІЛ 1', 'РОЗДІЛ 2']);
+  const nav = '<html><body><nav epub:type="landmarks"><a href="cover.xhtml">Cover</a></nav><nav epub:type="toc"><ol><li><a href="part.xhtml#one">Розділ <span>1</span></a></li><li><a href="part.xhtml#two">Розділ 2</a></li></ol></nav></body></html>';
+  const links = parseNavigation(nav, 'nav'); assert.equal(links.length, 2);
+  const chunks = [], builder = new ChunkBuilder('toc', chunk => chunks.push(chunk));
+  const parser = createExtractor(builder, { format: 'epub', metadata: {}, inferChapters: false, chapterTargets: links.map(link => ({ title: link.title, ...resolveArchiveLocation('OPS/nav.xhtml', link.href) })) });
+  parser.write('<html><body><p id="one">Розділ 1</p><p>Перший текст.</p><p id="two">Розділ 2</p><p>Другий текст.</p></body></html>'); parser.end();
+  const result = builder.finish(), text = chunks.map(c => c.text).join('');
+  assert.equal(result.chapters[0].title, 'Розділ 1');
+  assert.equal(result.chapters[1].start, text.indexOf('Розділ 2'));
+});
+test('EPUB cover declarations, SVG cover-page references and selected FB2 base64 image', async () => {
+  const opf = parseMetadata('<package><metadata><meta name="cover" content="front"/></metadata><manifest><item id="front" href="img/front.png" properties="cover-image"/></manifest><spine toc="ncx"/><guide><reference type="cover" href="cover.xhtml"/></guide></package>');
+  assert.equal(opf.coverId, 'front'); assert.equal(opf.guideCover, 'cover.xhtml'); assert.equal(opf.spineToc, 'ncx');
+  assert.deepEqual(imageReferences('<svg><image xlink:href="images/front.png"/></svg><img src="other.png"/>'), ['images/front.png', 'other.png']);
+  const xml = '<FictionBook><description><title-info><coverpage><image l:href="#front"/></coverpage></title-info></description><body><p>Текст.</p></body><binary id="other" content-type="image/png">T1RIRVI=</binary><binary id="front" content-type="image/jpeg"> Q09W RVItREFUQQ== </binary></FictionBook>';
+  const result = extract(xml, 'fb2', 3);
+  assert.equal(result.text, 'Текст.'); assert.equal(result.metadata.coverBlob.type, 'image/jpeg');
+  assert.equal(await result.metadata.coverBlob.text(), 'COVER-DATA');
 });

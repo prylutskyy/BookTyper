@@ -1,18 +1,28 @@
 import { Parser } from 'htmlparser2';
+import { Base64Cover } from './covers.js';
 
 const local = name => name.toLowerCase().split(':').at(-1);
 const blocks = new Set(['p', 'div', 'section', 'br', 'li', 'blockquote', 'subtitle', 'text-author', 'v', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']);
 const invisible = new Set(['script', 'style', 'svg', 'math', 'binary', 'nav', 'head']);
 
-export function createExtractor(writer, { format, metadata, onTitle = () => {} }) {
+export function createExtractor(writer, { format, metadata, onTitle = () => {}, chapterTargets = [], inferChapters = true }) {
   const stack = [];
   let bodyDepth = 0, skipDepth = 0, heading = null, headingStart = 0;
   let metaKind = null, metaText = '', titleSeen = false;
   let xmlRoot = false, closedRoot = false;
+  let binary = null, matchedTarget = false;
+  const documentStart = writer.position;
+  const targets = new Map(chapterTargets.map(target => [target.fragment, target.title]));
   const parser = new Parser({
     onopentag(name, attrs) {
       const tag = local(name); stack.push(tag);
       if (format === 'fb2' && tag === 'fictionbook') xmlRoot = true;
+      if (format === 'fb2' && tag === 'image' && stack.includes('coverpage')) {
+        const href = Object.entries(attrs).find(([key]) => local(key) === 'href')?.[1];
+        if (href?.startsWith('#')) metadata.coverId = href.slice(1);
+      }
+      if (format === 'fb2' && tag === 'binary' && /^image\//i.test(attrs['content-type'] || '') &&
+          (metadata.coverId ? attrs.id === metadata.coverId : !metadata.coverBlob)) binary = new Base64Cover(attrs['content-type']);
       if (tag === 'body' && !bodyDepth) {
         if (format === 'fb2' && ['notes', 'comments'].includes(attrs.name)) skipDepth ||= stack.length;
         else bodyDepth = stack.length;
@@ -23,12 +33,16 @@ export function createExtractor(writer, { format, metadata, onTitle = () => {} }
       }
       if (bodyDepth && !skipDepth) {
         if (blocks.has(tag) || tag === 'title') writer.boundary();
+        const anchor = attrs.id || attrs['xml:id'];
+        const target = targets.get(anchor) || (tag === 'body' ? targets.get('') : null);
+        if (target) { writer.chapter(target); matchedTarget = true; }
         if (tag === 'title' || /^h[1-6]$/.test(tag)) {
           heading = ''; headingStart = writer.position;
         }
       }
     },
     ontext(text) {
+      if (binary) binary.write(text);
       if (metaKind) metaText = (metaText + text).slice(0, 1000);
       if (bodyDepth && !skipDepth) {
         if (heading !== null) heading = (heading + text).slice(0, 240);
@@ -46,7 +60,7 @@ export function createExtractor(writer, { format, metadata, onTitle = () => {} }
       if (bodyDepth && !skipDepth) {
         if (heading !== null && (tag === 'title' || /^h[1-6]$/.test(tag))) {
           const title = heading.replace(/\s+/g, ' ').trim();
-          if (title) {
+          if (title && inferChapters) {
             const last = writer.chapters.at(-1);
             if (last?.start === headingStart) last.title = title;
             else writer.chapters.push({ title, start: headingStart });
@@ -58,6 +72,7 @@ export function createExtractor(writer, { format, metadata, onTitle = () => {} }
       }
       if (stack.length === skipDepth) skipDepth = 0;
       if (stack.length === bodyDepth) bodyDepth = 0;
+      if (tag === 'binary' && binary) { metadata.coverBlob = binary.finish(); binary = null; }
       stack.pop();
       if (format === 'fb2' && tag === 'fictionbook') closedRoot = true;
     },
@@ -67,13 +82,16 @@ export function createExtractor(writer, { format, metadata, onTitle = () => {} }
     end() {
       parser.end();
       if (format === 'fb2' && (!xmlRoot || !closedRoot)) throw new Error('Файл не містить коректного документа FictionBook.');
+      // A damaged/missing anchor still leaves the document accessible in its declared TOC.
+      if (!matchedTarget && chapterTargets.length && writer.position > documentStart)
+        writer.chapters.push({ title: chapterTargets[0].title, start: documentStart });
     },
   };
 }
 
 // OPF/container metadata is small and never includes book bodies or image data.
 export function parseMetadata(xml) {
-  const result = { rootfile: null, title: '', author: '', manifest: new Map(), spine: [], encrypted: [] };
+  const result = { rootfile: null, title: '', author: '', manifest: new Map(), spine: [], encrypted: [], coverId: null, guideCover: null, spineToc: null };
   let field = null, value = '';
   const parser = new Parser({
     onopentag(name, attrs) {
@@ -81,6 +99,9 @@ export function parseMetadata(xml) {
       if (tag === 'rootfile' && !result.rootfile) result.rootfile = attrs['full-path'];
       if (tag === 'item' && attrs.id) result.manifest.set(attrs.id, attrs);
       if (tag === 'itemref' && attrs.linear !== 'no') result.spine.push(attrs.idref);
+      if (tag === 'spine') result.spineToc = attrs.toc;
+      if (tag === 'meta' && attrs.name?.toLowerCase() === 'cover') result.coverId = attrs.content;
+      if (tag === 'reference' && attrs.type?.split(/\s+/).includes('cover')) result.guideCover = attrs.href;
       if (tag === 'cipherreference' && attrs.URI) result.encrypted.push(attrs.URI);
       if (['title', 'creator'].includes(tag)) { field = tag; value = ''; }
     },
@@ -98,10 +119,57 @@ export function parseMetadata(xml) {
 }
 
 export function resolveArchivePath(base, href) {
+  return resolveArchiveLocation(base, href).path;
+}
+export function resolveArchiveLocation(base, href) {
   // An EPUB href is a URL reference, never an OS filesystem path.
   const url = new URL(href, `https://epub.invalid/${base}`);
   if (url.origin !== 'https://epub.invalid') throw new Error('Книга посилається на зовнішній розділ.');
-  return decodeURIComponent(url.pathname.slice(1));
+  return { path: decodeURIComponent(url.pathname.slice(1)), fragment: decodeURIComponent(url.hash.slice(1)) };
+}
+export function parseNavigation(xml, format) {
+  const entries = [], points = [], stack = [];
+  let tocDepth = 0, link = null, labelDepth = 0;
+  const parser = new Parser({
+    onopentag(name, attrs) {
+      const tag = local(name); stack.push(tag);
+      if (format === 'ncx') {
+        if (tag === 'navpoint') { const point = { title: '', href: '' }; points.push(point); entries.push(point); }
+        if (tag === 'navlabel') labelDepth = stack.length;
+        if (tag === 'content' && points.length) points.at(-1).href = attrs.src || '';
+      } else {
+        if (tag === 'nav' && ((attrs['epub:type'] || attrs.type || '').split(/\s+/).includes('toc') || attrs.role === 'doc-toc')) tocDepth = stack.length;
+        if (tag === 'a' && tocDepth && attrs.href) { link = { title: '', href: attrs.href }; entries.push(link); }
+      }
+    },
+    ontext(text) {
+      const entry = format === 'ncx' ? labelDepth && points.at(-1) : link;
+      if (entry) entry.title = (entry.title + text).slice(0, 240);
+    },
+    onclosetag(name) {
+      const tag = local(name);
+      if (tag === 'navpoint') points.pop();
+      if (stack.length === labelDepth) labelDepth = 0;
+      if (stack.length === tocDepth) tocDepth = 0;
+      if (tag === 'a') link = null;
+      stack.pop();
+    },
+  }, { xmlMode: true, decodeEntities: true });
+  parser.end(xml);
+  return entries.map(entry => ({ ...entry, title: entry.title.replace(/\s+/g, ' ').trim() })).filter(entry => entry.title && entry.href);
+}
+
+export function imageReferences(xml) {
+  const references = [];
+  const parser = new Parser({ onopentag(name, attrs) {
+    const tag = local(name);
+    if (tag === 'img' && attrs.src) references.push(attrs.src);
+    if (tag === 'image') {
+      const href = Object.entries(attrs).find(([key]) => local(key) === 'href')?.[1];
+      if (href) references.push(href);
+    }
+  } }, { xmlMode: true, decodeEntities: true });
+  parser.end(xml); return references;
 }
 export function detectEncoding(bytes) {
   if (bytes[0] === 0xff && bytes[1] === 0xfe) return 'utf-16le';

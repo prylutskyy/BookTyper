@@ -24,6 +24,7 @@ const number = value => new Intl.NumberFormat('uk-UA').format(value || 0);
 const percent = (book, p) => Math.min(100, (p?.position || 0) / book.totalChars * 100);
 const app = document.querySelector('#app');
 let books = [], progressMap = new Map(), current = null, chunk = null, prefetched = null;
+const coverURLs = new Map();
 let session = { activeMs: 0, last: 0, correct: 0, attempts: 0 }, settings = { theme: 'light', fontSize: 25, relaxed: true, strict: true };
 let saveTimer, viewToken = 0, renderFrame, importing = false, importWorker = null;
 let importQueue = [], activeImportId = null, typingNodes = new Map();
@@ -79,6 +80,9 @@ function shell() {
 function storageError(error) { toast(`Не вдалося зберегти дані: ${error.message}`, true); }
 async function refreshBooks() {
   books = (await listBooks()).sort((a, b) => b.createdAt - a.createdAt);
+  for (const [id, url] of coverURLs) {
+    if (!books.some(book => book.id === id)) { URL.revokeObjectURL(url); coverURLs.delete(id); }
+  }
   progressMap = new Map((await allProgress()).map(p => [p.bookId, p]));
   document.querySelector('#book-count').textContent = books.length;
 }
@@ -118,6 +122,15 @@ function statsValues() {
   return { chars: values.reduce((n, p) => n + (p.correct || 0), 0), ms: values.reduce((n, p) => n + (p.activeMs || 0), 0),
     attempts: values.reduce((n, p) => n + (p.attempts || 0), 0), started: values.filter(p => p.position > 0).length };
 }
+function coverURL(book) {
+  if (!book.coverBlob?.size) return null;
+  if (!coverURLs.has(book.id)) coverURLs.set(book.id, URL.createObjectURL(book.coverBlob));
+  return coverURLs.get(book.id);
+}
+function bookCover(book, color) {
+  const url = coverURL(book);
+  return `<div class="book-cover cover-${color}${url ? ' has-cover' : ''}">${url ? `<img class="cover-image" src="${url}" alt="Обкладинка ${escape(book.title)}" loading="lazy" decoding="async" />` : `<span class="cover-top">${escape(book.author)}</span><div class="cover-decoration">${['✳', '◈', '❋', '✦', '◎'][color]}</div><h3>${escape(book.title)}</h3><span class="cover-bottom">ВАША ОСОБИСТА БІБЛІОТЕКА</span>`}<span class="format-tag">${book.format.toUpperCase()}</span></div>`;
+}
 function renderLibrary() {
   const recent = books.filter(b => (progressMap.get(b.id)?.position || 0) < b.totalChars).sort((a, b) => (progressMap.get(b.id)?.updatedAt || 0) - (progressMap.get(a.id)?.updatedAt || 0))[0];
   const stats = statsValues();
@@ -125,7 +138,7 @@ function renderLibrary() {
     <header class="topbar"><span>МІСЦЕ ДЛЯ ЗОСЕРЕДЖЕНОЇ ПРАКТИКИ</span><div class="private-label">${icon('lock')}Без акаунта. Без зайвого.</div></header>
     <section class="welcome"><div class="eyebrow"><span></span>ЧИТАЙТЕ. ДРУКУЙТЕ. ВІДЧУВАЙТЕ ПРОГРЕС.</div><h1>Книга за книгою.<br><em>Слово за словом.</em></h1><p>Перетворіть улюблені історії на щоденну практику.<br> Знайдіть свій ритм — і продовжуйте з того місця, де зупинились.</p><div class="welcome-art" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><div class="art-book art-back"></div><div class="art-book art-front"><span>THE ART<br>OF SLOW<br><i>PROGRESS</i></span><small>ONE WORD AT A TIME</small><b>✳</b></div><span class="art-spark">✦</span></div></section>
     <div class="overview"><div><span class="overview-icon">${icon('library')}</span><p><strong>${number(books.length)}</strong><span>книг у бібліотеці</span></p></div><div><span class="overview-icon">${icon('chart')}</span><p><strong>${number(stats.chars)}</strong><span>символів набрано</span></p></div><div><span class="overview-icon clock-icon">◷</span><p><strong>${Math.round(stats.ms / 60000)} <small>хв</small></strong><span>уважної практики</span></p></div></div>
-    ${recent ? `<section class="continue-card"><div class="mini-cover">${icon('book')}</div><div class="continue-info"><span class="eyebrow">ВАША НАСТУПНА СТОРІНКА</span><h2>${escape(recent.title)}</h2><p>${escape(recent.author)}<span class="separator">·</span>${percent(recent, progressMap.get(recent.id)).toFixed(1)}% пройдено</p></div><button class="primary" id="continue-book">Продовжити ${icon('arrow')}</button></section>` : ''}
+    ${recent ? `<section class="continue-card"><div class="mini-cover">${coverURL(recent) ? `<img src="${coverURL(recent)}" alt="" />` : icon('book')}</div><div class="continue-info"><span class="eyebrow">ВАША НАСТУПНА СТОРІНКА</span><h2>${escape(recent.title)}</h2><p>${escape(recent.author)}<span class="separator">·</span>${percent(recent, progressMap.get(recent.id)).toFixed(1)}% пройдено</p></div><button class="primary" id="continue-book">Продовжити ${icon('arrow')}</button></section>` : ''}
     <section class="library"><div class="section-heading"><div><h2>Моя бібліотека <span>${books.length}</span></h2><p>Історії, до яких хочеться повертатися.</p></div><button id="add-book" class="primary">${icon('upload')}Додати книгу</button></div><div class="library-toolbar"><div class="library-filter">Усі книги <span>${books.length}</span></div><label class="search">${icon('search')}<input id="search" placeholder="Знайти книгу чи автора" aria-label="Знайти книгу чи автора" value="${escape(query)}" /></label></div><div id="book-grid" class="book-grid"></div></section>
     <footer class="page-footer"><span>${icon('lock')}Книги та прогрес зберігаються лише у цьому браузері</span><span>Зроблено для вашого ритму <span class="footer-star">✳</span></span></footer>`;
   document.querySelector('#add-book').onclick = () => document.querySelector('#file-input').click();
@@ -138,7 +151,7 @@ function renderGrid() {
   document.querySelector('#book-grid').innerHTML = filtered.map(book => {
     const p = progressMap.get(book.id), value = percent(book, p);
     const color = [...book.title].reduce((n, c) => n + c.codePointAt(0), 0) % 5;
-    return `<article class="book-card"><button class="book-open" data-open="${book.id}" aria-label="Відкрити ${escape(book.title)}"><div class="book-cover cover-${color}"><span class="cover-top">${escape(book.author)}</span><div class="cover-decoration">${['✳', '◈', '❋', '✦', '◎'][color]}</div><h3>${escape(book.title)}</h3><span class="cover-bottom">ВАША ОСОБИСТА БІБЛІОТЕКА</span><span class="format-tag">${book.format.toUpperCase()}</span></div><div class="book-info"><h3 title="${escape(book.title)}">${escape(book.title)}</h3><p>${escape(book.author)}</p><div class="book-progress"><div><span style="width:${value}%"></span></div><small>${value >= 100 ? 'Прочитано ✓' : `${value.toFixed(1)}%`}</small></div></div></button><button class="delete-book icon-button" data-delete="${book.id}" aria-label="Видалити ${escape(book.title)}">${icon('trash')}</button></article>`;
+    return `<article class="book-card"><button class="book-open" data-open="${book.id}" aria-label="Відкрити ${escape(book.title)}">${bookCover(book, color)}<div class="book-info"><h3 title="${escape(book.title)}">${escape(book.title)}</h3><p>${escape(book.author)}</p><div class="book-progress"><div><span style="width:${value}%"></span></div><small>${value >= 100 ? 'Прочитано ✓' : `${value.toFixed(1)}%`}</small></div></div></button><button class="delete-book icon-button" data-delete="${book.id}" aria-label="Видалити ${escape(book.title)}">${icon('trash')}</button></article>`;
   }).join('') + (!query ? `<button class="upload-card" id="upload-card">${icon('upload')}<strong>Що читатимемо далі?</strong><span>Перетягніть книгу сюди<br>або виберіть файл</span><small>FB2 · EPUB · Лише на вашому пристрої</small></button>` : '');
   if (!filtered.length && query) document.querySelector('#book-grid').innerHTML = '<p class="empty-search">Книг не знайдено. Спробуйте іншу назву.</p>';
   document.querySelectorAll('[data-open]').forEach(button => button.onclick = () => openBook(button.dataset.open));
@@ -451,6 +464,8 @@ async function nextImport() {
     } else if (data.type === 'done' || data.type === 'error') {
       importWorker.terminate(); importWorker = null; activeImportId = null; importDone++;
       if (data.type === 'done') {
+        if (coverURLs.has(data.book.id)) { URL.revokeObjectURL(coverURLs.get(data.book.id)); coverURLs.delete(data.book.id); }
+        if (current?.book.id === data.book.id) { current.book = data.book; updateReader(); }
         await refreshBooks(); if (view === 'library' && !current) renderLibrary();
         toast(`«${data.book.title}» додано до бібліотеки`);
       } else if (!data.cancelled) toast(data.message, true);

@@ -22,6 +22,24 @@ export async function cleanupInterruptedImports() {
   }
 }
 export async function putBook(book) { return (await dbPromise).put('books', book); }
+export async function reuseBookMetadata(book) {
+  const db = await dbPromise;
+  const existing = (await listBooks()).find(other => other.id !== book.id && other.sourceName === book.sourceName && other.sourceSize === book.sourceSize && other.title === book.title && other.totalChars === book.totalChars && other.chunkCount === book.chunkCount);
+  if (!existing) return book;
+  // Compare bounded batches of actual text; a filename/size match alone cannot justify reuse.
+  for (let index = 0; index < book.chunkCount; index += 128) {
+    const range = id => IDBKeyRange.bound([id, index], [id, Math.min(index + 127, book.chunkCount - 1)]);
+    const [oldChunks, newChunks] = await Promise.all([db.getAll('chunks', range(existing.id)), db.getAll('chunks', range(book.id))]);
+    if (oldChunks.length !== newChunks.length || oldChunks.some((chunk, i) => chunk.start !== newChunks[i].start || chunk.text !== newChunks[i].text)) return book;
+  }
+  const updated = { ...book, id: existing.id, createdAt: existing.createdAt };
+  const tx = db.transaction(['books', 'chunks'], 'readwrite');
+  tx.objectStore('books').put(updated);
+  tx.objectStore('books').delete(book.id);
+  tx.objectStore('chunks').delete(IDBKeyRange.bound([book.id, 0], [book.id, Number.MAX_SAFE_INTEGER]));
+  await tx.done;
+  return updated;
+}
 export async function getChunk(bookId, index) { return (await dbPromise).get('chunks', [bookId, index]); }
 export async function putChunks(chunks) {
   if (!chunks.length) return;

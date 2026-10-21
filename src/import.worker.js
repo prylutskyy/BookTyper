@@ -1,7 +1,7 @@
-import { ZipReader, BlobReader, TextWriter, configure } from '@zip.js/zip.js';
+import { ZipReader, BlobReader, TextWriter, BlobWriter, configure } from '@zip.js/zip.js';
 import { ChunkBuilder } from './text.js';
-import { createExtractor, detectEncoding, parseMetadata, resolveArchivePath } from './extract.js';
-import { putBook, putChunks, deleteBook } from './db.js';
+import { createExtractor, detectEncoding, parseMetadata, parseNavigation, imageReferences, resolveArchiveLocation, resolveArchivePath } from './extract.js';
+import { putBook, putChunks, deleteBook, reuseBookMetadata } from './db.js';
 
 configure({ useWebWorkers: false, chunkSize: 64 * 1024 });
 let cancelled = false;
@@ -72,6 +72,39 @@ async function importFile(data) {
       const opf = parseMetadata(await smallXml(packagePath));
       metadata.title = opf.title || metadata.title; metadata.author = opf.author;
       if (!opf.spine.length) throw new Error('EPUB не містить розділів для читання.');
+      const manifest = [...opf.manifest.values()];
+      const navItem = manifest.find(item => item.properties?.split(/\s+/).includes('nav'));
+      const ncxItem = opf.manifest.get(opf.spineToc) || manifest.find(item => item['media-type'] === 'application/x-dtbncx+xml');
+      const navigation = new Map();
+      for (const item of [navItem, ncxItem].filter(Boolean)) {
+        const navPath = resolveArchivePath(packagePath, item.href);
+        const links = parseNavigation(await smallXml(navPath), item === navItem ? 'nav' : 'ncx');
+        for (const link of links) {
+          const target = resolveArchiveLocation(navPath, link.href);
+          const targets = navigation.get(target.path) || [];
+          if (!targets.some(entry => entry.fragment === target.fragment)) targets.push({ title: link.title, fragment: target.fragment });
+          navigation.set(target.path, targets);
+        }
+        if (navigation.size) break;
+      }
+      const declaredCover = manifest.find(item => item.properties?.split(/\s+/).includes('cover-image')) || opf.manifest.get(opf.coverId);
+      const imageItems = manifest.filter(item => item['media-type']?.startsWith('image/'));
+      const coverCandidates = [declaredCover?.href, opf.guideCover, ...imageItems.filter(item => /cover|обкладинка/i.test(item.id + ' ' + item.href)).map(item => item.href), imageItems[0]?.href].filter(Boolean);
+      for (const href of new Set(coverCandidates)) {
+        try {
+          let path = resolveArchivePath(packagePath, href);
+          if (!lookup.has(path)) continue;
+          if (/\.x?html?$/i.test(path)) {
+            const image = imageReferences(await smallXml(path))[0];
+            if (!image) continue;
+            path = resolveArchivePath(path, image);
+          }
+          const image = lookup.get(path); if (!image) continue;
+          const type = imageItems.find(item => resolveArchivePath(packagePath, item.href) === path)?.['media-type'] || 'image/jpeg';
+          metadata.coverBlob = await image.getData(new BlobWriter(type));
+          if (metadata.coverBlob.size) break;
+        } catch { /* A broken optional cover must not hide readable text. */ }
+      }
       const encrypted = lookup.has('META-INF/encryption.xml') ? parseMetadata(await smallXml('META-INF/encryption.xml')).encrypted : [];
       const chapters = opf.spine.map(ref => {
         const item = opf.manifest.get(ref);
@@ -80,15 +113,17 @@ async function importFile(data) {
         if (encrypted.some(uri => resolveArchivePath('', uri) === path)) throw new Error('Текст EPUB зашифровано (DRM). Потрібна книга без DRM.');
         const entry = lookup.get(path);
         if (!entry) throw new Error(`Не знайдено розділ: ${path}`);
-        return entry;
+        return { entry, path };
       });
-      const totalBytes = chapters.reduce((sum, entry) => sum + entry.uncompressedSize, 0);
+      const totalBytes = chapters.reduce((sum, { entry }) => sum + entry.uncompressedSize, 0);
+      let textDocuments = 0;
       for (let i = 0; i < chapters.length; i++) {
-        writer.boundary(); writer.chapter(`Розділ ${i + 1}`);
-        const parser = createExtractor(writer, { format, metadata });
+        writer.boundary();
+        const start = writer.position, chapterCount = writer.chapters.length;
+        const parser = createExtractor(writer, { format, metadata, chapterTargets: navigation.get(chapters[i].path) || [], inferChapters: !navigation.size });
         let decoder;
         // Decompress only spine text, one entry at a time; covers and assets stay compressed.
-        await chapters[i].getData(new WritableStream({
+        await chapters[i].entry.getData(new WritableStream({
           async write(value) {
             decoder ||= new TextDecoder(detectEncoding(value), { fatal: true });
             for (let j = 0; j < value.length; j += 65536) {
@@ -99,16 +134,21 @@ async function importFile(data) {
           },
           close() { if (decoder) parser.write(decoder.decode()); parser.end(); },
         }));
+        if (writer.position > start) {
+          textDocuments++;
+          if (!navigation.size && writer.chapters.length === chapterCount) writer.chapters.push({ title: `Розділ ${textDocuments}`, start });
+        }
       }
     }
     const result = writer.finish();
     await flush(99, 'Зберігаємо книгу');
     if (!result.totalChars) throw new Error('У книзі не знайдено тексту для набору.');
-    const book = {
+    let book = {
       id, title: metadata.title, author: metadata.author || 'Невідомий автор', format,
-      sourceName: file.name, sourceSize: file.size, ...result,
+      sourceName: file.name, sourceSize: file.size, coverBlob: metadata.coverBlob || null, ...result,
       createdAt: Date.now(), status: 'ready', importMs: Math.round(performance.now() - started),
     };
+    book = await reuseBookMetadata(book);
     await putBook(book);
     self.postMessage({ type: 'done', book });
   } catch (error) {
