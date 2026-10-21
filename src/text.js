@@ -50,7 +50,7 @@ export class ChunkBuilder {
   }
 }
 
-const aliases = { '’': "'", '‘': "'", 'ʼ': "'", '“': '"', '”': '"', '„': '"', '—': '-', '–': '-', '\u00a0': ' ' };
+const aliases = { '’': "'", '‘': "'", 'ʼ': "'", '“': '"', '”': '"', '„': '"', '«': '"', '»': '"', '—': '-', '–': '-', '\u00a0': ' ' };
 export function equivalent(actual, expected, relaxed) {
   if (actual === expected) return true;
   return relaxed && (aliases[actual] || actual) === (aliases[expected] || expected);

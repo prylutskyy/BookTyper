@@ -13,6 +13,24 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 .zen #main{margin-inline:auto}.book-cover.has-cover{padding:0}.book-cover.has-cover:before{display:none}.cover-image{width:100%;height:100%;object-fit:cover}.mini-cover img{width:100%;height:100%;object-fit:cover}
 
+/* One shared scrolling layer keeps text and caret aligned during line changes. */
+.typing-content{font-family:"Cascadia Code",Consolas,"Courier New",monospace;font-size:var(--typing-size);line-height:1.9;color:#a4aa9d;white-space:pre-wrap;overflow-wrap:anywhere;position:relative;padding:8px 3px 0;pointer-events:none;will-change:transform;transition:transform 110ms cubic-bezier(.2,.65,.3,1),filter 180ms ease,opacity 180ms ease;filter:blur(3px);opacity:.4}
+.typing-content .text-window{display:inline;position:static;padding:0;font:inherit;color:inherit;transform:none!important;transition:none;will-change:auto;filter:none;opacity:1}
+.typing-content span[data-offset]{position:relative;transition:color 90ms ease,background-color 90ms ease}
+.typing-content .typed{color:var(--text)}
+.typing-content .wrong{color:#b9594e;background:#bd5d4f14}
+.typing-content .caret:before{content:none}
+.focused .typing-content{filter:none;opacity:1}
+#typing-caret{position:absolute;top:0;left:0;width:2px;border-radius:2px;background:var(--green);pointer-events:none;opacity:0;will-change:transform;transition:transform 75ms cubic-bezier(.2,.65,.3,1),opacity 140ms ease}
+#typing-caret:after{content:"";position:absolute;inset:0;background:inherit;border-radius:inherit}
+.focused #typing-caret{opacity:1}
+.focused:not(.is-typing) #typing-caret{background:transparent}
+.focused:not(.is-typing) #typing-caret:after{background:var(--green);animation:caret-rest 1.2s ease-in-out infinite}
+.typing-content.instant,.typing-content.instant #typing-caret{transition:none}
+.reader-progress>span{transition:width 160ms ease}
+@keyframes caret-rest{0%,100%{opacity:1}50%{opacity:.25}}
+@media(max-width:640px){.typing-content{font-size:calc(var(--typing-size) - 3px)}}
+
 /* Both sizes share the physical book silhouette used by the continue thumbnail. */
 .book-object.book-cover,.book-object.mini-cover{
   border-left:var(--book-spine,4px) solid #718365;

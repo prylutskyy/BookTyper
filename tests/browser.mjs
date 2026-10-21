@@ -102,12 +102,14 @@ try {
 
   await page.locator(`[data-open="${fb2.id}"]`).click(); await page.locator('#chapters').click();
   await page.locator('[data-chapter]').last().click();
+  await eventually(async () => (await progress(fb2.id)).position === fb2.chapters[1].start);
   assert.equal((await progress(fb2.id)).position, fb2.chapters[1].start);
   await page.locator('#typing-input').focus();
   await type(fb2text.slice(fb2.chapters[1].start));
   await page.locator('#completion').waitFor({ state: 'visible' });
   assert.equal((await progress(fb2.id)).position, fb2.totalChars);
   await page.locator('#chapters').click(); await page.locator('#start-again').click();
+  await eventually(async () => (await progress(fb2.id)).position === 0);
   assert.equal((await progress(fb2.id)).position, 0);
   record('chapter navigation, completion and restart');
   await page.locator('#reader-settings').click();

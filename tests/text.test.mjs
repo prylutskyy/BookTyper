@@ -49,6 +49,10 @@ test('OPF spine order, creators, URL paths and encoding discovery', () => {
 test('punctuation aliases are opt-in, and chapter lookup respects exact boundaries', () => {
   assert.equal(equivalent("'", '’', true), true); assert.equal(equivalent("'", '’', false), false);
   assert.equal(equivalent('-', '—', true), true); assert.equal(equivalent('a', 'A', true), false);
+  for (const quote of ['«', '»', '“', '”', '„']) {
+    assert.equal(equivalent('"', quote, true), true);
+    assert.equal(equivalent('"', quote, false), false);
+  }
   const chapters = [{ start: 0 }, { start: 100 }, { start: 300 }];
   assert.equal(chapterAt(chapters, 100), 1); assert.equal(chapterAt(chapters, 299), 1); assert.equal(chapterAt(chapters, 300), 2);
 });

@@ -1,6 +1,7 @@
 import './style.css';
 import { dbPromise, listBooks, cleanupInterruptedImports, putBook, putChunks, getChunk, loadProgress, saveProgress, deleteBook, allProgress } from './db.js';
 import { ChunkBuilder, equivalent, nextCharacter, previousOffset, chapterAt } from './text.js';
+import { TypingView } from './typing-view.js';
 
 const icons = {
   book: '<path d="M3 4h6a3 3 0 0 1 3 3v14a4 4 0 0 0-4-3H3zM21 4h-6a3 3 0 0 0-3 3v14a4 4 0 0 1 4-3h5z"/>',
@@ -27,7 +28,7 @@ let books = [], progressMap = new Map(), current = null, chunk = null, prefetche
 const coverURLs = new Map();
 let session = { activeMs: 0, last: 0, correct: 0, attempts: 0 }, settings = { theme: 'light', fontSize: 25, relaxed: true, strict: true };
 let saveTimer, viewToken = 0, renderFrame, importing = false, importWorker = null;
-let importQueue = [], activeImportId = null, typingNodes = new Map();
+let importQueue = [], activeImportId = null, typingNodes = new Map(), typingView;
 let view = 'library', query = '', toastTimer, importTotal = 0, importDone = 0;
 
 function toast(message, error = false) {
@@ -106,7 +107,9 @@ async function commitProgress(p = snapshot()) {
 }
 function closeBook() {
   if (current) { clearTimeout(saveTimer); journal(); commitProgress(); }
-  current = null; chunk = null; prefetched = null; queuedText = ''; viewToken++;
+  typingView?.destroy(); typingView = null;
+  if (renderFrame) cancelAnimationFrame(renderFrame); renderFrame = null;
+  current = null; chunk = null; prefetched = null; inputQueue = []; advancing = false; viewToken++;
   document.body.classList.remove('reading', 'zen');
 }
 function navigate(next) {
@@ -189,16 +192,17 @@ async function openBook(id, target) {
     <header class="reader-topbar"><button id="back-library" class="text-button">${icon('back')}До бібліотеки</button><span id="save-status">Прогрес збережено</span><button id="reader-settings" class="icon-button" aria-label="Налаштування набору">${icon('settings')}</button></header>
     <section class="reader"><div class="reader-heading"><span class="eyebrow">ЧАС ПОБУТИ МІЖ РЯДКАМИ</span><h1>${escape(book.title)}</h1><p>${escape(book.author)}</p></div><div class="reader-stats"><div><strong id="wpm">0</strong><span>слів / хв</span></div><div><strong id="accuracy">100<small>%</small></strong><span>точність</span></div><div><strong id="reader-percent">0<small>%</small></strong><span>книги пройдено</span></div><div><strong id="timer">0:00</strong><span>час практики</span></div></div>
     <div class="chapter-bar"><button id="chapters" class="text-button">${icon('book')}<span id="chapter-title"></span><span>⌄</span></button><span id="position-label"></span></div>
-    <div class="typing-area" id="typing-area"><div id="text-window" class="text-window" aria-hidden="true"></div><p id="accessible-passage" class="sr-only"></p><textarea id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Поле набору тексту книги" aria-describedby="typing-help accessible-passage"></textarea><button id="focus-prompt">Натисніть тут, щоб почати друкувати ${icon('arrow')}</button><div id="completion" hidden><span>✳</span><h2>Книга пройдена!</h2><p>Слово за словом — ви дійшли до останньої сторінки.</p><button id="finish-library" class="primary">До бібліотеки ${icon('arrow')}</button></div></div>
+    <div class="typing-area" id="typing-area"><div class="typing-content" aria-hidden="true"><span class="typing-history"></span><div id="text-window" class="text-window"></div><span class="typing-preview"></span><span id="typing-caret"></span></div><p id="accessible-passage" class="sr-only"></p><textarea id="typing-input" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="Поле набору тексту книги" aria-describedby="typing-help accessible-passage"></textarea><button id="focus-prompt">Натисніть тут, щоб почати друкувати ${icon('arrow')}</button><div id="completion" hidden><span>✳</span><h2>Книга пройдена!</h2><p>Слово за словом — ви дійшли до останньої сторінки.</p><button id="finish-library" class="primary">До бібліотеки ${icon('arrow')}</button></div></div>
     <div class="reader-progress"><span id="reader-progress-fill"></span></div><div class="typing-footer" id="typing-help"><span><kbd>Enter</kbd> новий абзац <span class="separator">·</span> <kbd>Backspace</kbd> назад <span class="separator">·</span> <kbd>Esc</kbd> пауза</span><button id="zen" class="text-button">Режим фокусу ⛶</button></div><p class="reader-note">Не поспішайте. Важливий не фініш, а ваш ритм.</p></section>`;
   document.querySelector('#back-library').onclick = () => navigate('library');
   document.querySelector('#reader-settings').onclick = readerSettings;
   document.querySelector('#chapters').onclick = chapterDialog;
   document.querySelector('#finish-library').onclick = () => navigate('library');
   window.scrollTo({ top: 0, behavior: 'instant' });
-  document.querySelector('#zen').onclick = () => document.body.classList.toggle('zen');
+  typingView = new TypingView(document.querySelector('#typing-area'));
+  document.querySelector('#zen').onclick = () => { document.body.classList.toggle('zen'); scrollCaret(true); };
   const input = document.querySelector('#typing-input');
-  input.addEventListener('focus', () => { document.querySelector('#typing-area').classList.add('focused'); });
+  input.addEventListener('focus', () => { document.querySelector('#typing-area').classList.add('focused'); scrollCaret(true); });
   input.addEventListener('blur', () => { document.querySelector('#typing-area')?.classList.remove('focused'); session.last = 0; });
   document.querySelector('#focus-prompt').onclick = () => input.focus();
   document.querySelector('#typing-area').addEventListener('click', event => { if (!event.target.closest('button')) input.focus(); });
@@ -231,34 +235,32 @@ async function seekPosition(position, token = viewToken) {
   }
   if (!found) return;
   current.progress.position = position; current.progress.chunkIndex = found.index;
-  chunk = activateChunk(found); prefetched = getChunk(book.id, chunk.index + 1);
-  renderText(); updateReader();
+  chunk = activateChunk(found);
+  renderText(); prefetchChunk(); updateReader();
 }
 function activateChunk(record) {
   return { ...record, wrongOffsets: new Set(record.wrongOffsets || []) };
 }
-function renderText() {
-  const window = document.querySelector('#text-window'); if (!window || !chunk || !current) return;
-  typingNodes = new Map(); const fragment = document.createDocumentFragment();
-  let offset = chunk.start;
-  for (const char of chunk.text) {
-    const span = document.createElement('span'); span.textContent = char === '\n' ? '↵\n' : char;
-    if (offset < current.progress.position) span.className = chunk.wrongOffsets.has(offset - chunk.start) ? 'wrong' : 'typed';
-    if (offset === current.progress.position) span.className = 'caret';
-    typingNodes.set(offset, span); fragment.append(span); offset += char.length;
-  }
-  window.replaceChildren(fragment); window.style.transform = 'translateY(0)';
+function renderText(continuous = false) {
+  if (!typingView || !chunk || !current) return;
+  document.querySelector('.typing-content').hidden = false;
+  typingView.render(chunk, current.progress.position, continuous);
+  typingNodes = typingView.nodes;
   document.querySelector('#accessible-passage').textContent = chunk.text;
   document.querySelector('#completion').hidden = true;
   document.querySelector('#focus-prompt').hidden = false;
   document.querySelector('#typing-input').disabled = false;
-  scrollCaret();
 }
-function scrollCaret() {
-  const node = typingNodes.get(current?.progress.position), window = document.querySelector('#text-window');
-  if (!node || !window) return;
-  const top = node.offsetTop;
-  window.style.transform = `translateY(-${Math.max(0, top - 65)}px)`;
+function prefetchChunk() {
+  const token = viewToken, index = chunk.index;
+  prefetched = getChunk(current.book.id, index + 1);
+  prefetched.then(next => {
+    if (token !== viewToken || chunk?.index !== index) return;
+    typingView?.preview(next);
+  }).catch(() => {}); // Report a read failure if the reader actually reaches it.
+}
+function scrollCaret(snap = false) {
+  if (current) typingView?.update(current.progress.position, snap);
 }
 function onKeydown(event) {
   if (event.isComposing) return;
@@ -266,10 +268,22 @@ function onKeydown(event) {
   if (event.key === 'Backspace') { event.preventDefault(); backspace(event.ctrlKey || event.metaKey); }
   if (event.key === 'Enter') { event.preventDefault(); typeText('\n'); }
 }
-let advancing = false, queuedText = '';
+let advancing = false, draining = false, inputQueue = [];
+function drainInput() {
+  if (draining) return;
+  draining = true;
+  try {
+    while (!advancing && current && inputQueue.length) {
+      const action = inputQueue.shift();
+      if (action.type === 'text') typeText(action.value);
+      else backspace(action.word);
+    }
+  } finally { draining = false; }
+}
 function typeText(value) {
   if (!current || !chunk) return;
-  if (advancing) { queuedText += value; return; }
+  if (advancing) { inputQueue.push({ type: 'text', value }); return; }
+  typingView.activity();
   const inputChars = [...value.normalize('NFC')];
   for (let i = 0; i < inputChars.length; i++) {
     const actual = inputChars[i];
@@ -291,14 +305,15 @@ function typeText(value) {
     journal(); scheduleUpdate();
     if (p.position >= current.book.totalChars) { completeBook(); break; }
     if (p.position >= chunk.start + chunk.text.length) {
-      queuedText = inputChars.slice(i + 1).join('') + queuedText;
+      const remaining = inputChars.slice(i + 1).join('');
+      if (remaining) inputQueue.unshift({ type: 'text', value: remaining });
       advanceChunk(); break;
     }
   }
 }
 function scheduleUpdate() {
   if (renderFrame) return;
-  renderFrame = requestAnimationFrame(() => { renderFrame = null; if (current) { updateReader(); scrollCaret(); } });
+  renderFrame = requestAnimationFrame(() => { renderFrame = null; if (current) { scrollCaret(); updateReader(); } });
 }
 async function advanceChunk() {
   advancing = true; const token = viewToken;
@@ -308,31 +323,37 @@ async function advanceChunk() {
     if (token !== viewToken || !current) return;
     if (!next) throw new Error('Не вдалося завантажити наступний фрагмент.');
     chunk = activateChunk(next); current.progress.chunkIndex = next.index;
-    prefetched = getChunk(current.book.id, next.index + 1);
-    renderText(); journal();
-  } catch (error) { queuedText = ''; toast(error.message, true); }
+    renderText(true); prefetchChunk(); journal();
+  } catch (error) { if (token === viewToken) { inputQueue = []; toast(error.message, true); } }
   finally {
-    advancing = false;
-    if (token === viewToken && current && queuedText) {
-      const remaining = queuedText; queuedText = ''; typeText(remaining);
-    }
+    if (token === viewToken) { advancing = false; drainInput(); }
   }
 }
 async function backspace(word = false) {
-  if (!current || !chunk || advancing) return;
+  if (!current || !chunk) return;
+  if (advancing) { inputQueue.push({ type: 'delete', word }); return; }
+  typingView.activity();
   const p = current.progress;
   const node = typingNodes.get(p.position);
   if (node?.classList.contains('mistake')) { node.classList.remove('mistake'); return; }
   if (p.position <= 0) return;
+  const oldPosition = p.position;
+  let changedChunk = false;
   let position = previousOffset(chunk.text, p.position - chunk.start) + chunk.start;
   if (p.position === chunk.start) {
     advancing = true; const token = viewToken;
-    await commitProgress();
-    if (token !== viewToken || !current) { advancing = false; return; }
-    const previous = await getChunk(current.book.id, chunk.index - 1);
-    if (token !== viewToken || !current) { advancing = false; return; }
-    if (previous) { chunk = activateChunk(previous); prefetched = getChunk(current.book.id, chunk.index + 1); position = chunk.start + previousOffset(chunk.text, chunk.text.length); }
-    advancing = false;
+    try {
+      await commitProgress();
+      if (token !== viewToken || !current) return;
+      const previous = await getChunk(current.book.id, chunk.index - 1);
+      if (token !== viewToken || !current) return;
+      if (!previous) throw new Error('Не вдалося завантажити попередній фрагмент.');
+      chunk = activateChunk(previous); changedChunk = true;
+      position = chunk.start + previousOffset(chunk.text, chunk.text.length);
+    } catch (error) {
+      if (token === viewToken) { inputQueue = []; advancing = false; toast(error.message, true); }
+      return;
+    }
   }
   if (word) {
     let i = position - chunk.start;
@@ -344,7 +365,15 @@ async function backspace(word = false) {
     if (offset >= position - chunk.start && offset < p.position - chunk.start) chunk.wrongOffsets.delete(offset);
   }
   p.position = Math.max(0, position); p.chunkIndex = chunk.index;
-  renderText(); updateReader(); journal();
+  if (changedChunk) { renderText(); prefetchChunk(); advancing = false; }
+  else {
+    typingNodes.get(oldPosition)?.classList.remove('caret', 'mistake');
+    for (let offset = p.position; offset < oldPosition; offset += nextCharacter(chunk.text, offset - chunk.start).length) {
+      typingNodes.get(offset)?.classList.remove('typed', 'wrong', 'mistake');
+    }
+    typingNodes.get(p.position)?.classList.add('caret');
+  }
+  scheduleUpdate(); journal(); drainInput();
 }
 function updateReader() {
   if (!current) return;
@@ -363,6 +392,7 @@ function updateReader() {
 function completeBook() {
   if (!current) return;
   document.querySelector('#completion').hidden = false;
+  document.querySelector('.typing-content').hidden = true;
   document.querySelector('#text-window').replaceChildren(); document.querySelector('#focus-prompt').hidden = true;
   document.querySelector('#typing-input').disabled = true;
   updateReader(); journal(); commitProgress();
@@ -389,7 +419,7 @@ function preferencesMarkup() {
 }
 function bindPreferences() {
   document.querySelector('#color-theme').onchange = event => { settings.theme = event.target.value; persistSettings().catch(storageError); };
-  document.querySelector('#font-size').onchange = event => { settings.fontSize = Number(event.target.value); persistSettings().catch(storageError); scrollCaret(); };
+  document.querySelector('#font-size').onchange = event => { settings.fontSize = Number(event.target.value); persistSettings().catch(storageError); scrollCaret(true); };
   for (const key of ['strict', 'relaxed']) document.querySelector(`#${key}`).onchange = event => { settings[key] = event.target.checked; persistSettings().catch(storageError); };
 }
 function readerSettings() { showDialog(`<span class="eyebrow">ВАШ РИТМ</span><h2>Налаштування набору</h2>${preferencesMarkup()}`); bindPreferences(); }
