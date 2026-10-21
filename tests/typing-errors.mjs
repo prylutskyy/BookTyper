@@ -60,7 +60,9 @@ try {
   assert.deepEqual(await wrongOffsets(), [0]);
   await page.locator('#typing-input').press('Backspace');
   assert.deepEqual(await wrongOffsets(), []);
-  await page.locator('#typing-input').press('Backspace'); await focus();
+  await page.locator('#typing-input').press('Backspace');
+  await page.waitForFunction(position => Number(document.querySelector('#position-label').textContent.split('/')[0].replace(/\D/g, '')) === position, firstChunk.length - 1);
+  await focus();
   assert.deepEqual(await wrongOffsets(), [0], 'Returning across a chunk boundary must retain previous mistakes');
   console.log('PASS mistakes across fragment transitions and Unicode text');
 
