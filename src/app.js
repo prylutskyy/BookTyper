@@ -84,7 +84,7 @@ async function refreshBooks() {
 }
 function snapshot() {
   if (!current) return null;
-  return { ...current.progress, updatedAt: Date.now() };
+  return { ...current.progress, errors: chunk ? { chunkIndex: chunk.index, offsets: [...chunk.wrongOffsets] } : current.progress.errors, updatedAt: Date.now() };
 }
 function journal() {
   const p = snapshot(); if (!p) return;
@@ -163,6 +163,8 @@ async function openBook(id, target) {
   closeBook(); const token = viewToken;
   const book = books.find(b => b.id === id); if (!book) return;
   const saved = await loadProgress(id);
+  // Replay the latest synchronous journal before loading a fragment's annotations.
+  if (saved?.errors) await saveProgress(saved);
   if (token !== viewToken) return;
   const p = { bookId: id, position: 0, chunkIndex: 0, correct: 0, attempts: 0, activeMs: 0, ...(saved || {}) };
   p.position = Math.max(0, Math.min(book.totalChars, p.position || 0));
@@ -201,6 +203,8 @@ async function openBook(id, target) {
 }
 async function seekPosition(position, token = viewToken) {
   if (!current) return;
+  if (chunk) await commitProgress();
+  if (token !== viewToken || !current) return;
   const book = current.book;
   if (position >= book.totalChars) { current.progress.position = book.totalChars; completeBook(); return; }
   let low = 0, high = book.chunkCount - 1, found;
@@ -214,8 +218,11 @@ async function seekPosition(position, token = viewToken) {
   }
   if (!found) return;
   current.progress.position = position; current.progress.chunkIndex = found.index;
-  chunk = found; prefetched = getChunk(book.id, chunk.index + 1);
+  chunk = activateChunk(found); prefetched = getChunk(book.id, chunk.index + 1);
   renderText(); updateReader();
+}
+function activateChunk(record) {
+  return { ...record, wrongOffsets: new Set(record.wrongOffsets || []) };
 }
 function renderText() {
   const window = document.querySelector('#text-window'); if (!window || !chunk || !current) return;
@@ -223,7 +230,7 @@ function renderText() {
   let offset = chunk.start;
   for (const char of chunk.text) {
     const span = document.createElement('span'); span.textContent = char === '\n' ? '↵\n' : char;
-    if (offset < current.progress.position) span.className = 'typed';
+    if (offset < current.progress.position) span.className = chunk.wrongOffsets.has(offset - chunk.start) ? 'wrong' : 'typed';
     if (offset === current.progress.position) span.className = 'caret';
     typingNodes.set(offset, span); fragment.append(span); offset += char.length;
   }
@@ -263,6 +270,8 @@ function typeText(value) {
     const node = typingNodes.get(p.position);
     if (correct) { p.correct++; session.correct++; }
     if (!correct && settings.strict) { node?.classList.add('mistake'); journal(); scheduleUpdate(); continue; }
+    if (correct) chunk.wrongOffsets.delete(localOffset);
+    else chunk.wrongOffsets.add(localOffset);
     node?.classList.remove('caret', 'mistake'); node?.classList.add(correct ? 'typed' : 'wrong');
     p.position += expected.length;
     typingNodes.get(p.position)?.classList.add('caret');
@@ -281,10 +290,11 @@ function scheduleUpdate() {
 async function advanceChunk() {
   advancing = true; const token = viewToken;
   try {
-    const next = await prefetched;
+    // Commit outgoing annotations before moving to another fragment.
+    const [next] = await Promise.all([prefetched, commitProgress()]);
     if (token !== viewToken || !current) return;
     if (!next) throw new Error('Не вдалося завантажити наступний фрагмент.');
-    chunk = next; current.progress.chunkIndex = next.index;
+    chunk = activateChunk(next); current.progress.chunkIndex = next.index;
     prefetched = getChunk(current.book.id, next.index + 1);
     renderText(); journal();
   } catch (error) { queuedText = ''; toast(error.message, true); }
@@ -304,9 +314,11 @@ async function backspace(word = false) {
   let position = previousOffset(chunk.text, p.position - chunk.start) + chunk.start;
   if (p.position === chunk.start) {
     advancing = true; const token = viewToken;
+    await commitProgress();
+    if (token !== viewToken || !current) { advancing = false; return; }
     const previous = await getChunk(current.book.id, chunk.index - 1);
     if (token !== viewToken || !current) { advancing = false; return; }
-    if (previous) { chunk = previous; prefetched = getChunk(current.book.id, chunk.index + 1); position = chunk.start + previousOffset(chunk.text, chunk.text.length); }
+    if (previous) { chunk = activateChunk(previous); prefetched = getChunk(current.book.id, chunk.index + 1); position = chunk.start + previousOffset(chunk.text, chunk.text.length); }
     advancing = false;
   }
   if (word) {
@@ -314,6 +326,9 @@ async function backspace(word = false) {
     while (i > 0 && /\s/.test(chunk.text[i])) i = previousOffset(chunk.text, i);
     while (i > 0 && !/\s/.test(chunk.text[previousOffset(chunk.text, i)])) i = previousOffset(chunk.text, i);
     position = chunk.start + i;
+  }
+  for (const offset of chunk.wrongOffsets) {
+    if (offset >= position - chunk.start && offset < p.position - chunk.start) chunk.wrongOffsets.delete(offset);
   }
   p.position = Math.max(0, position); p.chunkIndex = chunk.index;
   renderText(); updateReader(); journal();

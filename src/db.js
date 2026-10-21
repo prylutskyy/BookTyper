@@ -43,7 +43,15 @@ export async function loadProgress(id) {
   try { journal = JSON.parse(localStorage.getItem(`bt-progress:${id}`)); } catch { /* Storage denied. */ }
   return journal?.bookId === id && Number.isFinite(journal.position) && journal.updatedAt > (stored?.updatedAt || 0) ? journal : stored;
 }
-export async function saveProgress(progress) { return (await dbPromise).put('progress', progress); }
+export async function saveProgress(progress) {
+  const tx = (await dbPromise).transaction(['progress', 'chunks'], 'readwrite');
+  tx.objectStore('progress').put(progress);
+  if (progress.errors) {
+    const chunk = await tx.objectStore('chunks').get([progress.bookId, progress.errors.chunkIndex]);
+    if (chunk) tx.objectStore('chunks').put({ ...chunk, wrongOffsets: progress.errors.offsets });
+  }
+  await tx.done;
+}
 export async function allProgress() {
   const books = await listBooks();
   return (await Promise.all(books.map(b => loadProgress(b.id)))).filter(Boolean);
