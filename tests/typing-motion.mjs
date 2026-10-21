@@ -20,7 +20,7 @@ async function aligned() {
     const area = document.querySelector('#typing-area').getBoundingClientRect();
     return { dx: Math.abs(caret.left + 1 - span.left), dy: Math.abs(caret.top - span.top), y: caret.top - area.top, x: caret.left - area.left, width: area.width };
   });
-  assert.ok(geometry.dx < 1.5 && geometry.dy < 1.5, JSON.stringify(geometry));
+  assert.ok(geometry.dx < .05 && geometry.dy < .05, JSON.stringify(geometry));
   assert.ok(geometry.y >= 0 && geometry.y < 150 && geometry.x >= 0 && geometry.x < geometry.width, JSON.stringify(geometry));
 }
 try {
@@ -37,15 +37,15 @@ try {
     const input = document.querySelector('#typing-input'), caret = document.querySelector('#typing-caret');
     const x = caret.getBoundingClientRect().left;
     input.dispatchEvent(new InputEvent('beforeinput', { inputType: 'insertText', data: 'Р', bubbles: true, cancelable: true }));
-    const samples = [];
-    for (let i = 0; i < 10; i++) {
-      await new Promise(requestAnimationFrame); samples.push(caret.getBoundingClientRect().left);
+    const samples = [], times = [], started = performance.now();
+    for (let i = 0; i < 16; i++) {
+      await new Promise(requestAnimationFrame); samples.push(caret.getBoundingClientRect().left); times.push(performance.now() - started);
     }
-    return { x, samples, end: caret.getBoundingClientRect().left };
+    return { x, samples, times, end: caret.getBoundingClientRect().left };
   });
   assert.ok(motion.samples.some(x => x > motion.x && x < motion.end), JSON.stringify(motion));
-  const firstStep = motion.samples.find(x => x > motion.x + .01) - motion.x;
-  assert.ok(firstStep / (motion.end - motion.x) < .4, `Caret must accelerate gently, rather than jump on its first frame: ${JSON.stringify(motion)}`);
+  const arrival = motion.times[motion.samples.findIndex(x => Math.abs(x - motion.end) < .02)];
+  assert.ok(arrival <= 150, `Caret must finish its short movement without a long settling tail: ${JSON.stringify(motion)}`);
   assert.ok(motion.samples.every((x, i) => x >= (motion.samples[i - 1] ?? motion.x) - .01 && x <= motion.end + .01), 'Forward movement must stay monotonic without overshoot');
   await page.evaluate(() => { window.savedCharacter = document.querySelector('#text-window > span'); window.savedCaret = document.querySelector('#typing-caret'); });
   await page.locator('#typing-input').press('Backspace'); await waitPosition(8);
@@ -67,7 +67,7 @@ try {
   assert.ok(rapid.every(sample => sample.actual <= sample.expected + .5 && sample.expected - sample.actual < 45), JSON.stringify(rapid));
   for (const char of rapidText) await page.locator('#typing-input').press('Backspace');
   await waitPosition(8); await aligned();
-  console.log('PASS gentle acceleration, monotonic motion and rapid retargeting without dropped text or excessive lag');
+  console.log('PASS finite arrival, monotonic motion and rapid retargeting without dropped text or excessive lag');
 
   const first = await text();
   await page.keyboard.insertText(first.slice(8)); await waitPosition(first.length);

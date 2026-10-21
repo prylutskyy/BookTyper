@@ -11,7 +11,6 @@ export class TypingView {
     this.nodes = new Map();
     this.position = 0;
     this.visual = null;
-    this.velocity = { x: 0, y: 0, scroll: 0 };
     this.motion = matchMedia('(prefers-reduced-motion: reduce)');
     this.onMotion = () => this.update(this.position, true);
     this.motion.addEventListener('change', this.onMotion);
@@ -29,7 +28,7 @@ export class TypingView {
         history = before.filter(node => node.offsetTop >= last.offsetTop - line * 2 - 1);
       }
     }
-    const oldOrigin = history[0]?.offsetTop;
+    const oldOrigin = history.length ? history[0].getClientRects()[0].top - this.flow.getBoundingClientRect().top : 0;
     this.history.replaceChildren(...history);
     this.upcoming.replaceChildren();
     this.nodes.clear();
@@ -46,9 +45,10 @@ export class TypingView {
     if (history.length && this.visual) {
       // Removing old lines changes the coordinate origin, not their visible
       // position. Rebase an in-flight animation rather than snapping it.
-      const shift = oldOrigin - history[0].offsetTop;
+      const shift = oldOrigin - (history[0].getClientRects()[0].top - this.flow.getBoundingClientRect().top);
       this.visual.y -= shift; this.visual.scroll -= shift;
       if (this.target) { this.target.y -= shift; this.target.scroll -= shift; }
+      if (this.from) { this.from.y -= shift; this.from.scroll -= shift; }
       this.draw();
       this.update(position);
     } else this.update(position, true);
@@ -81,49 +81,49 @@ export class TypingView {
     const node = this.nodes.get(position);
     if (!node || !this.area.isConnected) return;
     // One geometry read per animation frame, before statistics DOM writes.
-    const top = node.offsetTop, left = node.offsetLeft;
+    const rect = node.getClientRects()[0], origin = this.flow.getBoundingClientRect();
+    if (!rect) return;
+    const top = rect.top - origin.top, left = rect.left - origin.left;
     const size = parseFloat(getComputedStyle(this.flow).fontSize);
     const line = parseFloat(getComputedStyle(this.flow).lineHeight);
     const anchor = Math.min(line * 2 + 8, this.area.clientHeight * .3);
     const target = { x: left - 1, y: top, scroll: Math.max(0, top - anchor) };
+    const now = performance.now();
+    // Retarget from the position at this instant, not the previous frame.
+    if (this.frame) this.sample(now);
+    const unchanged = this.target && ['x', 'y', 'scroll'].every(key => Math.abs(target[key] - this.target[key]) < .001);
+    if (unchanged && !snap && !this.motion.matches) return;
     // A line wrap must not sweep the caret diagonally across the paragraph.
     if (this.visual && this.target && Math.abs(top - this.target.y) > line / 2) {
-      this.visual.x = target.x; this.velocity.x = 0;
+      this.visual.x = target.x;
     }
     this.target = target;
     this.caret.style.height = `${size * 1.2}px`;
     if (snap || !this.visual || this.motion.matches || Math.abs(target.scroll - this.visual.scroll) > this.area.clientHeight) {
       cancelAnimationFrame(this.frame); this.frame = null;
-      this.velocity = { x: 0, y: 0, scroll: 0 };
       this.visual = { ...target }; this.draw();
-    } else if (!this.frame) {
-      this.lastFrame = performance.now() - 16;
-      this.animate(performance.now());
+    } else {
+      this.from = { ...this.visual };
+      this.started = now;
+      if (!this.frame) this.frame = requestAnimationFrame(time => this.animate(time));
     }
   }
   draw() {
     this.flow.style.transform = `translate3d(0,${-this.visual.scroll}px,0)`;
     this.caret.style.transform = `translate3d(${this.visual.x}px,${this.visual.y}px,0)`;
   }
-  animate(now) {
-    // An analytic critically damped spring preserves velocity when a new key
-    // changes the target. Unlike exponential easing it accelerates from rest,
-    // rather than jumping through half a character on the very first frame.
-    // Text and caret share the same clock, preserving their vertical alignment.
-    const elapsed = Math.max(0, Math.min(64, now - this.lastFrame)) / 1000;
-    const frequency = 46, decay = Math.exp(-frequency * elapsed);
-    this.lastFrame = now;
-    let distance = 0, speed = 0;
+  sample(now) {
+    // A finite 85 ms movement with gentle, symmetric power easing. It arrives
+    // exactly at the letter instead of leaving a slowly settling spring tail.
+    const progress = Math.max(0, Math.min(1, (now - this.started) / 85));
+    const blend = progress < .5 ? (2 * progress) ** 1.25 / 2 : 1 - (2 * (1 - progress)) ** 1.25 / 2;
     for (const key of ['x', 'y', 'scroll']) {
-      const offset = this.visual[key] - this.target[key];
-      const coefficient = this.velocity[key] + frequency * offset;
-      this.visual[key] = this.target[key] + (offset + coefficient * elapsed) * decay;
-      this.velocity[key] = (this.velocity[key] - frequency * coefficient * elapsed) * decay;
-      distance = Math.max(distance, Math.abs(this.target[key] - this.visual[key]));
-      speed = Math.max(speed, Math.abs(this.velocity[key]));
+      this.visual[key] = this.from[key] + (this.target[key] - this.from[key]) * blend;
     }
-    const settled = distance < .02 && speed < 1;
-    if (settled) { this.visual = { ...this.target }; this.velocity = { x: 0, y: 0, scroll: 0 }; }
+    return progress === 1;
+  }
+  animate(now) {
+    const settled = this.sample(now);
     this.draw();
     this.frame = settled ? null : requestAnimationFrame(time => this.animate(time));
   }

@@ -311,13 +311,12 @@ function typeText(value) {
     keyboardGuide?.press(actual, correct);
     const node = typingNodes.get(p.position);
     if (correct) { p.correct++; session.correct++; }
-    if (!correct && settings.strict) { node?.classList.add('mistake'); journal(); scheduleUpdate(); continue; }
+    if (!correct && settings.strict) { node?.classList.add('mistake'); continue; }
     if (correct) chunk.wrongOffsets.delete(localOffset);
     else chunk.wrongOffsets.add(localOffset);
     node?.classList.remove('caret', 'mistake'); node?.classList.add(correct ? 'typed' : 'wrong');
     p.position += expected.length;
     typingNodes.get(p.position)?.classList.add('caret');
-    journal(); scheduleUpdate();
     if (p.position >= current.book.totalChars) { completeBook(); break; }
     if (p.position >= chunk.start + chunk.text.length) {
       const remaining = inputChars.slice(i + 1).join('');
@@ -325,10 +324,13 @@ function typeText(value) {
       advanceChunk(); break;
     }
   }
+  scheduleUpdate(); journal();
 }
 function scheduleUpdate() {
+  // Start caret movement in the input task; statistics can wait for paint.
+  scrollCaret();
   if (renderFrame) return;
-  renderFrame = requestAnimationFrame(() => { renderFrame = null; if (current) { scrollCaret(); updateReader(); } });
+  renderFrame = requestAnimationFrame(() => { renderFrame = null; if (current) updateReader(); });
 }
 async function advanceChunk() {
   advancing = true; const token = viewToken;
